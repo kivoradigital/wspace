@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"unicode/utf8"
 
@@ -132,7 +133,25 @@ func (a *Adapter) hasCommitHook(ctx context.Context, worktree domain.Path) bool 
 		if !filepath.IsAbs(p) {
 			p = filepath.Join(string(worktree), p)
 		}
-		if info, err := os.Stat(p); err == nil && !info.IsDir() && info.Mode()&0o111 != 0 {
+		if hookInstalled(p, runtime.GOOS) {
+			return true
+		}
+	}
+	return false
+}
+
+// hookInstalled reports whether git would find a hook at p, following
+// git's find_hook. On Unix that needs the executable bit. Windows has no
+// executable bit: Git for Windows' access(X_OK) only checks that the file
+// exists, and it also tries p + ".exe"; Go reports no executable bit for
+// any Windows file, so checking it there would hide every hook.
+func hookInstalled(p, goos string) bool {
+	if goos != "windows" {
+		info, err := os.Stat(p)
+		return err == nil && !info.IsDir() && info.Mode()&0o111 != 0
+	}
+	for _, c := range []string{p, p + ".exe"} {
+		if info, err := os.Stat(c); err == nil && !info.IsDir() {
 			return true
 		}
 	}
