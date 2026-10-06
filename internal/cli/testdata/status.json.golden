@@ -1,0 +1,9 @@
+[
+  {
+    "alias": "svc",
+    "branch": "feature-x",
+    "ahead": 2,
+    "behind": 1,
+    "dirty": true
+  }
+]

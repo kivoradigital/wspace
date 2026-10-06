@@ -1,0 +1,7 @@
+context: work
+config dir: <TMPDIR>
+  base_branch = develop (context)
+  copy_env = true (builtin)
+  fetch_before_create = true (builtin)
+  env_prune_dirs = [node_modules vendor dist target .git] (builtin)
+  remote = origin (builtin)

@@ -1,0 +1,12 @@
+[
+  {
+    "name": "ws1",
+    "path": "<TMPDIR>",
+    "project_count": 1
+  },
+  {
+    "name": "ws2",
+    "path": "<TMPDIR>",
+    "project_count": 2
+  }
+]

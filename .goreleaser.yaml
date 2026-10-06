@@ -1,0 +1,189 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+#
+# GoReleaser v2 configuration for the wspace CLI.
+#
+# Every publisher below (Homebrew tap, Scoop bucket, winget, Chocolatey) sets
+# skip_upload / skip_publish so that nothing is pushed anywhere until this
+# repository and its tap/bucket/winget repositories are public. Running
+# `goreleaser release --snapshot --clean` produces every artifact and manifest
+# under dist/ only. Remove the skip_* settings once publishing is intended
+# (see packaging/RELEASE_CHECKLIST.md). There is intentionally no release
+# workflow yet.
+version: 2
+
+project_name: wspace
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: wspace
+    main: ./cmd/wspace
+    binary: wspace
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Same -X values as the Makefile's LDFLAGS (REPO_OWNER/REPO_NAME are the
+    # update-check coordinates).
+    ldflags:
+      - -s -w
+      - -X github.com/kivoradigital/wspace/internal/buildinfo.Version={{ .Version }}
+      - -X github.com/kivoradigital/wspace/internal/buildinfo.Commit={{ .ShortCommit }}
+      - -X github.com/kivoradigital/wspace/internal/buildinfo.Date={{ .Date }}
+      - -X github.com/kivoradigital/wspace/internal/buildinfo.RepoOwner=kivoradigital
+      - -X github.com/kivoradigital/wspace/internal/buildinfo.RepoName=wspace
+
+archives:
+  - id: wspace
+    ids:
+      - wspace
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - NOTICE
+      - THIRD_PARTY_LICENSES
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+nfpms:
+  - id: wspace
+    package_name: wspace
+    ids:
+      - wspace
+    formats:
+      - deb
+      - rpm
+    vendor: Kivora Digital S.L.
+    maintainer: Kivora Digital S.L.
+    homepage: https://github.com/kivoradigital/wspace
+    description: Multi-repository git worktree workspaces (CLI, MCP server and RPC engine).
+    license: Apache-2.0
+    bindir: /usr/bin
+    dependencies:
+      - git
+    contents:
+      - src: LICENSE
+        dst: /usr/share/doc/wspace/LICENSE
+      - src: NOTICE
+        dst: /usr/share/doc/wspace/NOTICE
+      - src: THIRD_PARTY_LICENSES
+        dst: /usr/share/doc/wspace/THIRD_PARTY_LICENSES
+
+# homebrew_casks replaces the deprecated `brews` section (GoReleaser v2.10+).
+homebrew_casks:
+  - name: wspace
+    ids:
+      - wspace
+    binaries:
+      - wspace
+    repository:
+      owner: kivoradigital
+      name: homebrew-tap
+    directory: Casks
+    homepage: https://github.com/kivoradigital/wspace
+    description: Multi-repository git worktree workspaces (CLI, MCP server and RPC engine).
+    license: Apache-2.0
+    commit_msg_template: "chore: update {{ .ProjectName }} to {{ .Tag }}"
+    # The binary is not notarized yet; drop the quarantine attribute so it runs.
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/wspace"]
+          end
+    skip_upload: true
+
+scoops:
+  - name: wspace
+    ids:
+      - wspace
+    repository:
+      owner: kivoradigital
+      name: scoop-bucket
+    homepage: https://github.com/kivoradigital/wspace
+    description: Multi-repository git worktree workspaces (CLI, MCP server and RPC engine).
+    license: Apache-2.0
+    commit_msg_template: "chore: update {{ .ProjectName }} to {{ .Tag }}"
+    skip_upload: true
+
+winget:
+  - name: wspace
+    ids:
+      - wspace
+    publisher: Kivora Digital S.L.
+    publisher_url: https://github.com/kivoradigital
+    package_identifier: KivoraDigital.wspace
+    short_description: Multi-repository git worktree workspaces (CLI, MCP server and RPC engine).
+    license: Apache-2.0
+    license_url: https://github.com/kivoradigital/wspace/blob/main/LICENSE
+    homepage: https://github.com/kivoradigital/wspace
+    tags:
+      - git
+      - worktree
+      - cli
+      - mcp
+    # A fork of microsoft/winget-pkgs; a pull request is opened against the
+    # upstream repository once publishing is enabled.
+    repository:
+      owner: kivoradigital
+      name: winget-pkgs
+      branch: "{{ .ProjectName }}-{{ .Version }}"
+      pull_request:
+        enabled: true
+        base:
+          owner: microsoft
+          name: winget-pkgs
+          branch: master
+    skip_upload: true
+
+chocolateys:
+  - name: wspace
+    ids:
+      - wspace
+    title: wspace
+    owners: Kivora Digital S.L.
+    authors: Kivora Digital S.L.
+    project_url: https://github.com/kivoradigital/wspace
+    project_source_url: https://github.com/kivoradigital/wspace
+    docs_url: https://github.com/kivoradigital/wspace/blob/main/README.md
+    bug_tracker_url: https://github.com/kivoradigital/wspace/issues
+    license_url: https://github.com/kivoradigital/wspace/blob/main/LICENSE
+    require_license_acceptance: false
+    copyright: 2026 Kivora Digital S.L.
+    tags: "git worktree cli mcp"
+    summary: Multi-repository git worktree workspaces.
+    description: |
+      wspace manages multi-repository workspaces built from git worktrees,
+      with a CLI, an MCP server for AI agents and a JSON-lines RPC engine.
+    release_notes: "https://github.com/kivoradigital/wspace/releases/tag/{{ .Tag }}"
+    # api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"  # add when publishing is enabled
+    source_repo: "https://push.chocolatey.org/"
+    skip_publish: true
+
+release:
+  github:
+    owner: kivoradigital
+    name: wspace

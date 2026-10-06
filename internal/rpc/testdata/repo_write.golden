@@ -1,0 +1,21 @@
+{"id":"1","result":{"repo":"api","paths":["util.go","notes.txt"]}}
+{"id":"2","error":{"code":"not_found","message":"the path is not a change in this repository: missing.go","data":{"domainCode":"path_not_changed","subject":"missing.go"}}}
+{"id":"3","result":{"repo":"api","paths":["main.go"]}}
+{"id":"4","error":{"code":"needs_confirmation","message":"discarding the unstaged changes of 1 file(s) cannot be undone except from the backup patch; retry with confirm: true","data":{"files":[{"path":"util.go","status":"modified","additions":3,"deletions":1,"binary":false}],"reasons":[]}}}
+{"id":"5","error":{"code":"conflict","message":"the path is an untracked file; delete it with the untracked-file action instead: notes.txt","data":{"domainCode":"path_is_untracked","subject":"notes.txt"}}}
+{"id":"6","result":{"repo":"api","discarded":["util.go"],"backup":"<CACHE>/discarded/api-<STAMP>.patch"}}
+{"id":"7","result":{"repo":"api","commit":{"hash":"abcdef0123456789abcdef0123456789abcdef01","shortHash":"abcdef0","subject":"feat: login","author":"Ada Acme","date":"<TIME>"},"warnings":[]}}
+{"id":"8","error":{"code":"invalid_params","message":"invalid parameter message: the commit message is empty","data":{"param":"message"}}}
+{"id":"9","error":{"code":"invalid_params","message":"invalid parameter amend: amending is not supported","data":{"param":"amend"}}}
+{"event":"progress","id":"10","data":{"kind":"repo","op":"repo.push","repo":"api","phase":"started"}}
+{"event":"progress","id":"10","data":{"kind":"repo","op":"repo.push","repo":"api","phase":"failed","error":"the branch has no upstream branch: api"}}
+{"id":"10","result":{"repo":"api","branch":"feat","remote":"origin","setUpstream":false,"upToDate":false,"pushed":0,"error":{"code":"conflict","message":"the branch has no upstream branch: api","data":{"domainCode":"no_upstream","remote":"origin","subject":"api"}}}}
+{"event":"progress","id":"11","data":{"kind":"repo","op":"repo.push","repo":"api","phase":"started"}}
+{"event":"progress","id":"11","data":{"kind":"repo","op":"repo.push","repo":"api","phase":"finished"}}
+{"id":"11","result":{"repo":"api","branch":"feat","remote":"origin","upstream":"origin/feat","setUpstream":true,"upToDate":false,"pushed":0}}
+{"id":"12","result":{"repo":"api","stash":{"index":0,"ref":"stash@{0}","hash":"5555555555555555555555555555555555555555","branch":"feat","message":"wip","date":"<TIME>"}}}
+{"id":"13","result":{"repo":"api","warnings":[],"error":{"code":"conflict","message":"git has no author identity (user.name and user.email) for this repository: api","data":{"commands":["git config --global user.name \"Your Name\"","git config --global user.email \"you@example.com\""],"domainCode":"identity_missing","subject":"api"}}}}
+{"event":"progress","id":"14","data":{"kind":"repo","op":"repo.push","repo":"api","phase":"started"}}
+{"event":"progress","id":"14","data":{"kind":"repo","op":"repo.push","repo":"api","phase":"failed","error":"the remote has commits this branch lacks; pull or update from base, then push again: origin/feat"}}
+{"id":"14","result":{"repo":"api","branch":"feat","remote":"origin","upstream":"origin/feat","setUpstream":false,"upToDate":false,"pushed":1,"error":{"code":"conflict","message":"the remote has commits this branch lacks; pull or update from base, then push again: origin/feat","data":{"domainCode":"push_rejected","output":" ! [rejected]        feat -\u003e feat (fetch first)","subject":"origin/feat"}}}}
+{"id":"15","error":{"code":"conflict","message":"there are no local changes to stash: api","data":{"domainCode":"nothing_to_stash","subject":"api"}}}

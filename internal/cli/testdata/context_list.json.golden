@@ -1,0 +1,8 @@
+[
+  {
+    "name": "work",
+    "active": true,
+    "workspaces_root": "/fixture/workspaces",
+    "project_count": 1
+  }
+]

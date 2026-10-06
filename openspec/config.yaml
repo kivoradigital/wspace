@@ -1,0 +1,56 @@
+schema: spec-driven
+
+context: |
+  Project: wspace (Go CLI + MCP server + JSON-lines RPC engine for desktop clients)
+  Tech stack: Go 1.22+, standard library first; add dependencies deliberately
+  Targets: Linux, Windows, macOS (CLI binary)
+  Architecture: greenfield, no prior Go source; design fresh (Clean/Hexagonal
+    boundaries between CLI, machine-facing surfaces (RPC, MCP), and core
+    domain logic recommended)
+  Testing: go test ./...; table-driven tests; golden files for output snapshots
+  Style: idiomatic Go, gofmt/go vet clean, no legacy shell script patterns carried over
+
+strict_tdd: true
+
+testing:
+  test_command: "go test ./..."
+  framework: "Go standard testing package"
+  layers:
+    unit: true
+    integration: false
+    e2e: false
+  coverage:
+    available: true
+    command: "go test ./... -cover"
+  quality:
+    linter: "go vet ./... (golangci-lint recommended once configured)"
+    formatter: "gofmt -l ."
+    type_checker: "go build ./... (static typing enforced by the Go compiler)"
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - State target platform(s) affected (Linux/Windows/macOS/all)
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Document CLI vs machine-facing surfaces (RPC, MCP) vs core-domain boundaries explicitly
+    - Document architecture decisions with rationale
+    - Include sequence diagrams for complex flows
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    guidelines:
+      - Follow idiomatic Go conventions and existing package patterns
+      - Reimplement behavior natively in Go; never name, cite, or mirror the reference material in source, comments, or docs
+      - Keep CLI and machine-facing (RPC, MCP) concerns in separate packages
+    tdd: true
+    test_command: "go test ./..."
+  verify:
+    test_command: "go test ./..."
+    build_command: "go build ./..."
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas

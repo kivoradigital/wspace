@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+PackageIdentifier: __OWNER__.wspace
+PackageVersion: __VERSION__
+InstallerType: inno
+Scope: user
+InstallModes:
+  - interactive
+  - silent
+InstallerSwitches:
+  Silent: "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"
+  SilentWithProgress: "/SILENT /NORESTART"
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/__OWNER__/__REPO__/releases/download/v__VERSION__/wspace-setup-__VERSION__.exe
+    InstallerSha256: __INSTALLER_SHA256__
+ManifestType: installer
+ManifestVersion: 1.6.0

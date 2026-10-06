@@ -1,0 +1,32 @@
+{
+  "context_name": "work",
+  "config_dir": "<TMPDIR>",
+  "options": {
+    "base_branch": {
+      "value": "develop",
+      "from": "context"
+    },
+    "copy_env": {
+      "value": true,
+      "from": "builtin"
+    },
+    "env_prune_dirs": {
+      "value": [
+        "node_modules",
+        "vendor",
+        "dist",
+        "target",
+        ".git"
+      ],
+      "from": "builtin"
+    },
+    "fetch_before_create": {
+      "value": true,
+      "from": "builtin"
+    },
+    "remote": {
+      "value": "origin",
+      "from": "builtin"
+    }
+  }
+}

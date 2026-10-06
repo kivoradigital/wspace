@@ -1,0 +1,10 @@
+function wspace
+    if test "$argv[1]" = "jump"
+        set -e argv[1]
+        set -l __wspace_target (command wspace jump $argv)
+        or return $status
+        cd $__wspace_target
+    else
+        command wspace $argv
+    end
+end

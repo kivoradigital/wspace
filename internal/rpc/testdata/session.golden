@@ -1,0 +1,13 @@
+{"id":"1","result":{"protocolVersion":1,"engineVersion":"1.2.3","methods":["agents.install","agents.mcpClean","agents.status","agents.uninstall","contexts.create","contexts.delete","contexts.get","contexts.importLegacy","contexts.list","contexts.switch","contexts.update","engine.checkUpdate","engine.doctor","engine.info","engine.version","mcp.sessions","projects.list","projects.register","projects.registerMany","projects.remove","projects.scan","projects.update","repos.changes","repos.commit","repos.commitChanges","repos.commits","repos.diff","repos.discard","repos.discardUntracked","repos.fetch","repos.inspect","repos.pull","repos.push","repos.stage","repos.stash","repos.stashApply","repos.stashCreate","repos.stashDrop","repos.stashPop","repos.stashes","repos.unstage","repos.validateUntracked","rpc.hello","workspaces.addRepo","workspaces.addableProjects","workspaces.adoptLegacy","workspaces.claim","workspaces.create","workspaces.destroy","workspaces.list","workspaces.removeRepo","workspaces.repair","workspaces.repoChanges","workspaces.status","workspaces.syncEnv","workspaces.teardownCheck","workspaces.update","workspaces.updateRepo"]}}
+{"id":null,"error":{"code":"invalid_request","message":"invalid request: invalid character 'o' in literal null (expecting 'u')"}}
+{"id":null,"error":{"code":"invalid_request","message":"invalid request: id must be a non-empty string"}}
+{"id":null,"error":{"code":"invalid_request","message":"invalid request: id must be a non-empty string"}}
+{"id":"2","error":{"code":"method_not_found","message":"method not found: nope.nothing"}}
+{"id":"3","error":{"code":"invalid_params","message":"invalid params: json: unknown field \"bogus\""}}
+{"id":"4","result":[{"name":"work","active":true,"workspacesRoot":"/fx/workspaces","projectsRoot":"/fx/src","projectCount":2}]}
+{"id":"5","error":{"code":"not_found","message":"context not found: missing","data":{"domainCode":"context_not_found","subject":"missing"}}}
+{"id":"6","error":{"code":"needs_confirmation","message":"destroying workspace feat would discard work (1 blocking item(s)); review the reasons and retry with force to proceed","data":{"reasons":[{"repo":"api","kind":"unpushed_commits","count":2,"message":"api: 2 unpushed commit(s)"}]}}}
+{"event":"progress","id":"7","data":{"kind":"repo","op":"workspace.destroy","repo":"api","phase":"started"}}
+{"event":"progress","id":"7","data":{"kind":"repo","op":"workspace.destroy","repo":"api","phase":"finished"}}
+{"id":"7","result":{"path":"/fx/workspaces/feat"}}
+{"id":"8","result":[{"pid":4242,"clientName":"claude-code","clientVersion":"2.1.0","startedAt":"<TIME>","lastActivityAt":"<TIME>","lastTool":"list_workspaces","lastToolAt":"<TIME>"}]}

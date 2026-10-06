@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- One source repository on the left, two worktrees branching off it:
+       the shape of what a workspace is. Drawn as flat filled shapes in a
+       single colour, so every renderer treats it the same way and the
+       desktop can recolour it for a light or dark menu bar. -->
+  <g fill="#000000">
+    <rect x="4.70" y="5.20" width="2.20" height="13.60" rx="1.10"/>
+    <rect x="4.70" y="9.50" width="13.30" height="2.20" rx="1.10"/>
+    <rect x="4.70" y="17.70" width="13.30" height="2.20" rx="1.10"/>
+    <circle cx="5.80" cy="5.20" r="2.60"/>
+    <circle cx="18.00" cy="10.60" r="2.60"/>
+    <circle cx="18.00" cy="18.80" r="2.60"/>
+  </g>
+</svg>

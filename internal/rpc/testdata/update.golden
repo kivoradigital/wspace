@@ -1,0 +1,6 @@
+{"event":"progress","id":"1","data":{"kind":"repo","op":"workspace.update","repo":"api","phase":"started"}}
+{"event":"progress","id":"1","data":{"kind":"repo","op":"workspace.update","repo":"api","phase":"failed","error":"worktree has uncommitted changes: api"}}
+{"id":"1","result":{"repo":"api","strategy":"merge","base":"origin/develop","beforeHead":"1111111","afterHead":"1111111","upToDate":false,"commitsIntegrated":0,"conflicts":[],"error":{"code":"conflict","message":"worktree has uncommitted changes: api","data":{"domainCode":"worktree_dirty","files":["main.go"],"subject":"api"}}}}
+{"event":"progress","id":"2","data":{"kind":"repo","op":"workspace.update","repo":"api","phase":"started"}}
+{"event":"progress","id":"2","data":{"kind":"repo","op":"workspace.update","repo":"api","phase":"finished"}}
+{"id":"2","result":{"repos":[{"repo":"api","strategy":"merge","base":"origin/develop","beforeHead":"1111111","afterHead":"2222222","upToDate":false,"commitsIntegrated":3,"conflicts":[]}]}}

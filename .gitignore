@@ -1,0 +1,18 @@
+# Build output
+/dist/
+/build/
+*.exe
+*.test
+*.out
+coverage.*
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Local environment
+.env
+.env.*
