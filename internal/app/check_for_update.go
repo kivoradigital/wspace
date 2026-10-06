@@ -28,9 +28,13 @@ type CheckForUpdateDeps struct {
 // Runtime.Version already threads through). Coordinates being the zero
 // value is exactly buildinfo.Coordinates()'s ok=false case: an unbranded
 // build.
+//
+// BundledBy (buildinfo.BundledBy) names the desktop app that embeds this
+// CLI; when it is non-empty the CLI is updated only with that app.
 type CheckForUpdateInput struct {
 	Coordinates    domain.RepoCoordinates
 	CurrentVersion string
+	BundledBy      string
 }
 
 // CheckForUpdateResult is the one shape both the CLI's `version --check`
@@ -38,16 +42,21 @@ type CheckForUpdateInput struct {
 // ReleaseChecker, two surfaces". Unavailable, Available and LatestTag are
 // mutually exclusive-by-convention (Unavailable=true means the other two
 // fields are meaningless), matching domain.ReleaseInfo's own contract one
-// layer down.
+// layer down. BundledBy non-empty means the CLI is bundled with that app:
+// Available and Unavailable are then both false, because there is nothing
+// to check — the app owns updates.
 type CheckForUpdateResult struct {
 	CurrentVersion string
 	LatestTag      string
 	Available      bool
 	Unavailable    bool
+	BundledBy      string
 }
 
 // CheckForUpdate implements design.md §11's "One ReleaseChecker, two
-// surfaces" use case. An unbranded build (Coordinates is the zero value)
+// surfaces" use case. A bundled build (BundledBy non-empty) never calls
+// deps.Checker: the bundling app updates it, so the CLI must not suggest
+// an update of its own. An unbranded build (Coordinates is the zero value)
 // never calls deps.Checker at all — querying a repository nobody chose
 // would be worse than reporting nothing. Otherwise it calls Latest exactly
 // once and computes Available itself via domain.CompareVersion, since
@@ -60,6 +69,11 @@ type CheckForUpdateResult struct {
 // than inventing a new failure mode on top of it.
 func CheckForUpdate(ctx context.Context, deps CheckForUpdateDeps, in CheckForUpdateInput) (CheckForUpdateResult, error) {
 	result := CheckForUpdateResult{CurrentVersion: in.CurrentVersion}
+
+	if in.BundledBy != "" {
+		result.BundledBy = in.BundledBy
+		return result, nil
+	}
 
 	if in.Coordinates == (domain.RepoCoordinates{}) {
 		result.Unavailable = true

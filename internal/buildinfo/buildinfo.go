@@ -11,15 +11,21 @@ package buildinfo
 
 import "github.com/kivoradigital/wspace/internal/domain"
 
-// All five are set via -ldflags -X (see the Makefile's LDFLAGS). Every field
+// All six are set via -ldflags -X (see the Makefile's LDFLAGS). Every field
 // has a safe zero-value default: an unbuilt/unflagged binary is "dev",
-// commit "none", date "unknown", and no repository coordinates at all.
+// commit "none", date "unknown", no repository coordinates at all, and not
+// bundled.
 var (
 	Version   = "dev"
 	Commit    = "none"
 	Date      = "unknown"
 	RepoOwner = ""
 	RepoName  = ""
+	// BundledBy is the display name of the desktop app that embeds and
+	// builds this CLI (`make build BUNDLED_BY="App Name"`). A bundled CLI
+	// is updated only together with that app, so it never checks for or
+	// suggests an update of its own. Package-manager builds leave it empty.
+	BundledBy = ""
 )
 
 // Coordinates returns the injected repository coordinates. ok is false when

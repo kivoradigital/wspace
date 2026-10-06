@@ -14,7 +14,7 @@ Hints: **RO** read-only, **D** destructive, **I** idempotent. Every tool sets `o
 |---|---|---|---|---|
 | `engine_version` | `engine.version` | — | `{"version"}` | RO, I |
 | `engine_info` | `engine.info` | `context?` | `InfoResult` | RO, I |
-| `check_update` | `engine.checkUpdate` | — | `UpdateCheckResult` | RO, I, open world |
+| `check_update` | `engine.checkUpdate` | — | `UpdateCheckResult`; `bundledBy` (omitted when empty) names the desktop app wspace is bundled with: no network request is made and the app updates it (see [bundling](bundling.md)) | RO, I, open world |
 | `run_doctor` | `engine.doctor` | `context?` | `{"gitTooOld","prunedWorktrees","warnings":[]}` | I |
 
 ### 1.2 Contexts

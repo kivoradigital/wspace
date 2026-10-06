@@ -202,6 +202,7 @@ const (
 	CLIShellInitUsage Key = "cli.shell_init.usage"
 	CLIExecNoCommand  Key = "cli.exec.no_command"
 	CLIVersionLine    Key = "cli.version.line"
+	CLIVersionBundled Key = "cli.version.bundled"
 
 	CLIPartialCreateGuidance Key = "cli.partial_create_guidance"
 
@@ -325,6 +326,7 @@ const (
 	CLIUpdateUpToDate         Key = "cli.update.up_to_date"
 	CLIUpdateAvailable        Key = "cli.update.available"
 	CLIUpdateCheckUnavailable Key = "cli.update.unavailable"
+	CLIUpdateBundled          Key = "cli.update.bundled"
 
 	// --verbose diagnostic block (internal/cli/errors.go's renderVerbose).
 	// Developer-facing, not end-user prose, but still routed through the

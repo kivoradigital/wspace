@@ -29,7 +29,13 @@ func newVersionCommand(rt *Runtime) *cobra.Command {
 		Short: "print the ws version and, with --check, look for an update",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// The first line stays exactly "wspace version X": other tools
+			// parse it (e.g. `sed -n 's/^wspace version //p'`), so the
+			// bundled note goes on a line of its own.
 			_, _ = fmt.Fprintln(cmd.OutOrStdout(), messages.T(messages.CLIVersionLine, rt.Version))
+			if rt.BundledBy != "" {
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), messages.T(messages.CLIVersionBundled, rt.BundledBy))
+			}
 			if !check {
 				return nil
 			}
@@ -37,6 +43,7 @@ func newVersionCommand(rt *Runtime) *cobra.Command {
 			result, err := app.CheckForUpdate(cmd.Context(), rt.CheckDeps, app.CheckForUpdateInput{
 				Coordinates:    rt.RepoCoordinates,
 				CurrentVersion: rt.Version,
+				BundledBy:      rt.BundledBy,
 			})
 			if err != nil {
 				return err
@@ -49,10 +56,12 @@ func newVersionCommand(rt *Runtime) *cobra.Command {
 	return cmd
 }
 
-// renderUpdateResult renders a CheckForUpdateResult's three mutually
+// renderUpdateResult renders a CheckForUpdateResult's four mutually
 // exclusive outcomes through the catalog.
 func renderUpdateResult(r app.CheckForUpdateResult) string {
 	switch {
+	case r.BundledBy != "":
+		return messages.T(messages.CLIUpdateBundled, r.CurrentVersion, r.BundledBy)
 	case r.Unavailable:
 		return messages.T(messages.CLIUpdateCheckUnavailable)
 	case r.Available:

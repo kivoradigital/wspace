@@ -82,6 +82,7 @@ func wire() (*cli.Runtime, error) {
 		Checker:     checker,
 		Version:     buildinfo.Version,
 		Coordinates: coordinates,
+		BundledBy:   buildinfo.BundledBy,
 		Presence:    presencefs.New(fs.Paths().Config),
 		Trees:       trees,
 		Agents:      &engine.AgentsDeps{FS: agentFS, Runner: agentRunner, Skill: skills.FS(), Home: fs.Paths().Home},
@@ -98,6 +99,7 @@ func wire() (*cli.Runtime, error) {
 		AgentsDeps:      agentsDeps,
 		Version:         buildinfo.Version,
 		RepoCoordinates: coordinates,
+		BundledBy:       buildinfo.BundledBy,
 		ServeRPC: func(ctx context.Context, in io.Reader, out io.Writer) error {
 			return rpc.NewServer(eng, buildinfo.Version).Serve(ctx, in, out)
 		},

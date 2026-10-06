@@ -112,6 +112,7 @@ func init() {
 		CLIShellInitUsage: "usage: wspace shell-init {bash|zsh|sh|fish}",
 		CLIExecNoCommand:  "no command given; usage: wspace exec <workspace> -- <command> [args...]",
 		CLIVersionLine:    "wspace version %[1]s",
+		CLIVersionBundled: "(bundled with %[1]s)",
 
 		CLIPartialCreateGuidance: "workspace creation failed and the changes it made were rolled back; if anything remains at %[1]s, inspect it, then run 'wspace repair %[2]s' or 'wspace destroy --force %[2]s'",
 
@@ -237,6 +238,7 @@ func init() {
 		CLIUpdateUpToDate:         "wspace %[1]s is up to date",
 		CLIUpdateAvailable:        "Update available: %[1]s (you have %[2]s)",
 		CLIUpdateCheckUnavailable: "Update check unavailable (offline, rate-limited, or an unbranded build)",
+		CLIUpdateBundled:          "wspace %[1]s is bundled with %[2]s and updates with it",
 
 		CLIVerboseOp:      "op: %[1]s",
 		CLIVerboseCode:    "code: %[1]s",

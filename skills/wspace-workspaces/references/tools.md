@@ -8,7 +8,7 @@ nothing and fail with `needs_confirmation` plus `data.reasons`.
 |---|---|---|
 | `engine_version` | — | `wspace version` |
 | `engine_info` | `context?` | `wspace info --json` |
-| `check_update` | — | `wspace version --check` |
+| `check_update` | — | `wspace version --check` (when `bundledBy` is set, wspace updates only with that app) |
 | `run_doctor` | `context?` | `wspace doctor` |
 | `list_contexts` | — | `wspace context list --json` |
 | `get_context` | `name?` | `wspace context show [name]` |
