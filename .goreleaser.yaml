@@ -187,10 +187,10 @@ chocolateys:
       wspace manages multi-repository workspaces built from git worktrees,
       with a CLI, an MCP server for AI agents and a JSON-lines RPC engine.
     release_notes: "https://github.com/kivoradigital/wspace/releases/tag/{{ .Tag }}"
-    api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"
-    source_repo: "https://push.chocolatey.org/"
-    # Prerelease tags skip Chocolatey in release.yml (--skip=chocolatey).
-    skip_publish: false
+    # GoReleaser only packs the .nupkg. release.yml pushes it in a separate,
+    # non-fatal step after the attestations, so a chocolatey.org rejection
+    # never breaks the rest of the release.
+    skip_publish: true
 
 release:
   github:
