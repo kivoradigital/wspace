@@ -71,14 +71,46 @@ It offers three interfaces over the same engine:
 
 Requirements: **git 2.20 or newer**.
 
-From source (requires Go, see the version in [go.mod](go.mod)):
+**macOS (Homebrew)**
+
+```sh
+brew install --cask kivoradigital/tap/wspace
+```
+
+**Windows**
+
+```powershell
+# Scoop
+scoop bucket add kivoradigital https://github.com/kivoradigital/scoop-bucket
+scoop install kivoradigital/wspace
+
+# winget (available once Microsoft merges the package)
+winget install KivoraDigital.wspace
+
+# Chocolatey (available once chocolatey.org approves the package)
+choco install wspace
+```
+
+**Linux**: download the `.deb`, `.rpm` or `.tar.gz` for your architecture
+from the [latest release](https://github.com/kivoradigital/wspace/releases/latest):
+
+```sh
+sudo apt install ./wspace_<version>_linux_amd64.deb   # Debian, Ubuntu
+sudo dnf install ./wspace_<version>_linux_amd64.rpm   # Fedora, RHEL
+```
+
+**From source** (requires Go, see the version in [go.mod](go.mod)):
 
 ```sh
 go install github.com/kivoradigital/wspace/cmd/wspace@latest
 ```
 
-Packages for Homebrew, winget, Chocolatey and Scoop, plus prebuilt archives,
-are coming with the first public release.
+Every release archive and package has a signed build provenance attestation.
+Verify a download with the [GitHub CLI](https://cli.github.com):
+
+```sh
+gh attestation verify <file> -R kivoradigital/wspace
+```
 
 To install a downloaded binary for your user and add it to your `PATH`:
 
