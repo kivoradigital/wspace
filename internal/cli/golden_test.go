@@ -23,7 +23,12 @@ var update = flag.Bool("update", false, "update golden files")
 // exists for the one golden test (TestCLI_List_JSONContract) that
 // deliberately exercises a FakeFS-derived root, proving the helper is
 // real, not decorative.
-var tmpDirPattern = regexp.MustCompile(regexp.QuoteMeta(strings.TrimRight(os.TempDir(), "/")) + `[^"\s]*`)
+// On Windows the path is matched both as os.TempDir() returns it
+// (backslashes) and in the slash form domain.Path uses.
+var tmpDirPattern = regexp.MustCompile(`(?:` +
+	regexp.QuoteMeta(strings.TrimRight(os.TempDir(), `/\`)) + `|` +
+	regexp.QuoteMeta(strings.TrimRight(filepath.ToSlash(os.TempDir()), "/")) +
+	`)[^"\s]*`)
 
 // timePattern normalizes RFC3339-ish timestamps.
 var timePattern = regexp.MustCompile(`\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?`)

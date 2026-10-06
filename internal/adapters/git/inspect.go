@@ -25,7 +25,17 @@ import (
 // drivers nor textconv filters. Both of those run user-configured
 // programs, which a read-only query must never do; binary files are
 // reported as binary instead.
-var diffFlags = []string{"--no-color", "--no-ext-diff", "--no-textconv", "-M", "--src-prefix=a/", "--dst-prefix=b/"}
+var diffFlags = append(diffContentFlags, "--src-prefix=a/", "--dst-prefix=b/")
+
+// diffContentFlags are diffFlags without the prefix options.
+var diffContentFlags = []string{"--no-color", "--no-ext-diff", "--no-textconv", "-M"}
+
+// defaultPrefixConfig forces the a/ b/ prefixes through configuration
+// instead of --src-prefix/--dst-prefix. `git stash show` in git 2.55
+// prints garbage bytes in place of prefixes passed as options, so stash
+// diffs use this instead; it overrides diff.noprefix and
+// diff.mnemonicPrefix from the user's configuration just the same.
+var defaultPrefixConfig = []string{"-c", "diff.noprefix=false", "-c", "diff.mnemonicPrefix=false"}
 
 // literal turns a worktree-relative path into a pathspec git matches
 // literally (no glob or magic).
@@ -51,6 +61,7 @@ func (a *Adapter) execCapped(ctx context.Context, argv []string, maxBytes int) (
 	defer cancel()
 	cmd := exec.CommandContext(runCtx, a.gitPath, argv...)
 	cmd.Env = buildEnv()
+	cmd.WaitDelay = waitDelay
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	stdout, err := cmd.StdoutPipe()
@@ -241,18 +252,18 @@ func (a *Adapter) StashList(ctx context.Context, worktree domain.Path) ([]domain
 	return list, nil
 }
 
-// StashShow runs `stash show -p [--include-untracked] <diffFlags>
-// stash@{<index>}`.
+// StashShow runs `<defaultPrefixConfig> stash show -p [--include-untracked]
+// <diffContentFlags> stash@{<index>}`.
 func (a *Adapter) StashShow(ctx context.Context, worktree domain.Path, index int, includeUntracked bool, limits domain.DiffLimits) (domain.Patch, error) {
 	const op = "git.stash_show"
 	if index < 0 {
 		return domain.Patch{}, domain.NewOpError(op, domain.CodeRefNotFound, strconv.Itoa(index), "", nil)
 	}
-	args := []string{"stash", "show", "-p"}
+	args := append(append([]string{}, defaultPrefixConfig...), "stash", "show", "-p")
 	if includeUntracked {
 		args = append(args, "--include-untracked")
 	}
-	args = append(append(args, diffFlags...), "stash@{"+strconv.Itoa(index)+"}")
+	args = append(append(args, diffContentFlags...), "stash@{"+strconv.Itoa(index)+"}")
 	return a.runPatch(ctx, op, worktree, limits, []int{0}, args...)
 }
 

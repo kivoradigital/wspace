@@ -10,9 +10,3 @@ linters:
     - staticcheck
     - errcheck
     - unused
-
-issues:
-  exclude-dirs:
-    - ws_old
-    - dist
-    - build

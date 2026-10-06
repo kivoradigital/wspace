@@ -15,6 +15,7 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/kivoradigital/wspace/internal/domain"
 	"github.com/kivoradigital/wspace/internal/ports"
@@ -91,12 +92,18 @@ type invocation struct {
 // command (a cancelled/expired context, or the process failing to start);
 // a non-zero exit from a git command that did run is reported through
 // invocation.exitCode, not through err.
+// waitDelay bounds how long Wait keeps reading a killed git's pipes. On
+// Windows git.exe is a launcher: killing it on cancel leaves its child
+// holding stdout/stderr open, so without this Wait never returns.
+const waitDelay = 2 * time.Second
+
 func (a *Adapter) exec(ctx context.Context, argv []string) (invocation, error) {
 	if a.gitPath == "" {
 		return invocation{}, errGitMissing()
 	}
 	cmd := exec.CommandContext(ctx, a.gitPath, argv...)
 	cmd.Env = buildEnv()
+	cmd.WaitDelay = waitDelay
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout

@@ -1,0 +1,3 @@
+# Check out text files with LF on every platform: golden files, the embedded
+# agent skill and shell scripts must be byte-identical everywhere.
+* text=auto eol=lf

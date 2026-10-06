@@ -295,7 +295,9 @@ func (f *FakeFS) WalkUp(start domain.Path, marker string) (domain.Path, bool, er
 			return cur, true, nil
 		}
 		parent := cur.Join("..")
-		if parent == cur {
+		// "/" is its own parent; a Windows volume ("C:") climbs to "." and
+		// then into "..", "../..", ... forever, so stop there too.
+		if parent == cur || parent == "." || strings.HasPrefix(string(parent), "..") {
 			return "", false, nil
 		}
 		cur = parent

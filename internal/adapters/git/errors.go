@@ -41,8 +41,12 @@ func classifyError(gitArgs []string, exitCode int, stderr string) domain.ErrCode
 
 // subcommands returns the git subcommand (args[0]) and, when present, its
 // first sub-subcommand (args[1]) — e.g. ("worktree", "add") for
-// ["worktree", "add", "-b", ...].
+// ["worktree", "add", "-b", ...]. Leading `-c <key=value>` pairs are
+// skipped.
 func subcommands(args []string) (sub, sub2 string) {
+	for len(args) > 1 && args[0] == "-c" {
+		args = args[2:]
+	}
 	if len(args) > 0 {
 		sub = args[0]
 	}
