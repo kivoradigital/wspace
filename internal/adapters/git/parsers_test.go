@@ -72,11 +72,11 @@ func TestParseWorktreeList(t *testing.T) {
 // output means a newline embedded in a path cannot forge a record boundary.
 func TestParseStatus_PathWithNewline(t *testing.T) {
 	gitfix.RequireGit(t)
+	weirdName := "odd\nname.txt"
+	gitfix.RequireValidFileName(t, weirdName)
 
 	origin := gitfix.NewOrigin(t)
 	clone := gitfix.NewClone(t, origin)
-
-	weirdName := "odd\nname.txt"
 	gitfix.Untracked(t, clone, weirdName)
 
 	a, err := git.New()

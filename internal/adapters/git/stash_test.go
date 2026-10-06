@@ -133,24 +133,32 @@ func TestGitAdapter_StashDropRemovesOnlyThatEntry(t *testing.T) {
 }
 
 func TestGitAdapter_CleanUntrackedRemovesOnlyTheNamedFiles(t *testing.T) {
-	gitfix.RequireGit(t)
-	repo := gitfix.NewClone(t, gitfix.NewOrigin(t))
-	a, ctx := newAdapter(t), context.Background()
-	gitfix.Commit(t, repo, ".gitignore", "ignored.log\n")
-	write(t, repo, "a *.txt", "x\n")
-	write(t, repo, "keep.txt", "x\n")
-	write(t, repo, "ignored.log", "x\n")
+	// Each name is also a pathspec glob: only the file literally named is
+	// removed. "*" cannot appear in a Windows file name; "[k]" can.
+	for _, odd := range []string{"a *.txt", "a [k].txt"} {
+		t.Run(odd, func(t *testing.T) {
+			gitfix.RequireGit(t)
+			gitfix.RequireValidFileName(t, odd)
+			repo := gitfix.NewClone(t, gitfix.NewOrigin(t))
+			a, ctx := newAdapter(t), context.Background()
+			gitfix.Commit(t, repo, ".gitignore", "ignored.log\n")
+			write(t, repo, odd, "x\n")
+			write(t, repo, "a k.txt", "x\n")
+			write(t, repo, "keep.txt", "x\n")
+			write(t, repo, "ignored.log", "x\n")
 
-	if err := a.CleanUntracked(ctx, repo, []string{"a *.txt", "ignored.log"}); err != nil {
-		t.Fatalf("CleanUntracked: %v", err)
-	}
-	for name, want := range map[string]bool{"a *.txt": false, "keep.txt": true, "ignored.log": true} {
-		_, err := os.Lstat(filepath.Join(string(repo), name))
-		if (err == nil) != want {
-			t.Errorf("%s exists = %v, want %v", name, err == nil, want)
-		}
-	}
-	if err := a.CleanUntracked(ctx, repo, []string{"../escape"}); err == nil {
-		t.Fatal("CleanUntracked(../escape) = nil, want a refusal")
+			if err := a.CleanUntracked(ctx, repo, []string{odd, "ignored.log"}); err != nil {
+				t.Fatalf("CleanUntracked: %v", err)
+			}
+			for name, want := range map[string]bool{odd: false, "a k.txt": true, "keep.txt": true, "ignored.log": true} {
+				_, err := os.Lstat(filepath.Join(string(repo), name))
+				if (err == nil) != want {
+					t.Errorf("%s exists = %v, want %v", name, err == nil, want)
+				}
+			}
+			if err := a.CleanUntracked(ctx, repo, []string{"../escape"}); err == nil {
+				t.Fatal("CleanUntracked(../escape) = nil, want a refusal")
+			}
+		})
 	}
 }

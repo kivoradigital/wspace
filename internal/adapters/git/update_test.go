@@ -131,19 +131,24 @@ func TestGitAdapter_ConflictIsInProgressUntilAborted(t *testing.T) {
 }
 
 func TestGitAdapter_ConflictedPathsKeepsOddNames(t *testing.T) {
-	u := newUpdateRepo(t)
-	odd := "dir with space/quote\"d.txt"
-	gitfix.Commit(t, u.other, odd, "main\n")
-	gitfix.Push(t, u.other, "main")
-	gitfix.Commit(t, u.repo, odd, "feat\n")
-	ctx := context.Background()
-	_ = u.a.Fetch(ctx, u.repo, "origin")
-	_ = u.a.Integrate(ctx, u.repo, ports.IntegrateSpec{Ref: "origin/main", Strategy: domain.UpdateMerge})
-	paths, err := u.a.ConflictedPaths(ctx, u.repo)
-	if err != nil || len(paths) != 1 || paths[0] != odd {
-		t.Fatalf("ConflictedPaths = %q, %v; want [%q]", paths, err, odd)
+	// A double quote cannot appear in a Windows file name; a single quote can.
+	for _, odd := range []string{"dir with space/quote\"d.txt", "dir with space/it's.txt"} {
+		t.Run(odd, func(t *testing.T) {
+			gitfix.RequireValidFileName(t, odd)
+			u := newUpdateRepo(t)
+			gitfix.Commit(t, u.other, odd, "main\n")
+			gitfix.Push(t, u.other, "main")
+			gitfix.Commit(t, u.repo, odd, "feat\n")
+			ctx := context.Background()
+			_ = u.a.Fetch(ctx, u.repo, "origin")
+			_ = u.a.Integrate(ctx, u.repo, ports.IntegrateSpec{Ref: "origin/main", Strategy: domain.UpdateMerge})
+			paths, err := u.a.ConflictedPaths(ctx, u.repo)
+			if err != nil || len(paths) != 1 || paths[0] != odd {
+				t.Fatalf("ConflictedPaths = %q, %v; want [%q]", paths, err, odd)
+			}
+			_ = u.a.AbortIntegration(ctx, u.repo, domain.UpdateMerge)
+		})
 	}
-	_ = u.a.AbortIntegration(ctx, u.repo, domain.UpdateMerge)
 }
 
 func TestGitAdapter_IntegrateWithAutostashKeepsLocalChanges(t *testing.T) {

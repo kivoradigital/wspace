@@ -47,36 +47,45 @@ func paths(entries []domain.ChangeEntry) []string {
 }
 
 func TestGitAdapter_StageAndUnstageModifiedDeletedAndUntrackedFiles(t *testing.T) {
-	gitfix.RequireGit(t)
-	isolateHome(t)
-	repo := gitfix.NewClone(t, gitfix.NewOrigin(t))
-	a, ctx := newAdapter(t), context.Background()
-	gitfix.Commit(t, repo, "gone.txt", "bye\n")
-	write(t, repo, "README.md", "edited\n")
-	if err := os.Remove(filepath.Join(string(repo), "gone.txt")); err != nil {
-		t.Fatal(err)
-	}
-	write(t, repo, "new file.txt", "new\n")
-	write(t, repo, "*.txt", "a file named like a glob\n")
+	// The glob-like name must be staged as a literal path. "*" cannot
+	// appear in a Windows file name; "[gn]" can.
+	for _, glob := range []string{"*.txt", "[gn]one.txt"} {
+		t.Run(glob, func(t *testing.T) {
+			gitfix.RequireGit(t)
+			gitfix.RequireValidFileName(t, glob)
+			isolateHome(t)
+			repo := gitfix.NewClone(t, gitfix.NewOrigin(t))
+			a, ctx := newAdapter(t), context.Background()
+			gitfix.Commit(t, repo, "gone.txt", "bye\n")
+			write(t, repo, "README.md", "edited\n")
+			if err := os.Remove(filepath.Join(string(repo), "gone.txt")); err != nil {
+				t.Fatal(err)
+			}
+			write(t, repo, "new file.txt", "new\n")
+			write(t, repo, glob, "a file named like a glob\n")
 
-	if err := a.Stage(ctx, repo, []string{"README.md", "gone.txt", "new file.txt", "*.txt"}); err != nil {
-		t.Fatalf("Stage: %v", err)
-	}
-	cs := changes(t, a, repo)
-	if got := paths(cs.Staged); !slices.Equal(got, []string{"*.txt", "README.md", "gone.txt", "new file.txt"}) || len(cs.Unstaged)+len(cs.Untracked) != 0 {
-		t.Fatalf("after stage: %+v", cs)
-	}
+			if err := a.Stage(ctx, repo, []string{"README.md", "gone.txt", "new file.txt", glob}); err != nil {
+				t.Fatalf("Stage: %v", err)
+			}
+			cs := changes(t, a, repo)
+			want := []string{glob, "README.md", "gone.txt", "new file.txt"}
+			slices.Sort(want)
+			if got := paths(cs.Staged); !slices.Equal(got, want) || len(cs.Unstaged)+len(cs.Untracked) != 0 {
+				t.Fatalf("after stage: %+v", cs)
+			}
 
-	if err := a.Unstage(ctx, repo, []string{"README.md", "gone.txt", "new file.txt"}, false); err != nil {
-		t.Fatalf("Unstage: %v", err)
-	}
-	cs = changes(t, a, repo)
-	if !slices.Equal(paths(cs.Staged), []string{"*.txt"}) || !slices.Equal(paths(cs.Unstaged), []string{"README.md", "gone.txt"}) ||
-		!slices.Equal(paths(cs.Untracked), []string{"new file.txt"}) {
-		t.Fatalf("after unstage: %+v", cs)
-	}
-	if b, _ := os.ReadFile(filepath.Join(string(repo), "README.md")); string(b) != "edited\n" {
-		t.Fatalf("unstage touched the worktree: %q", b)
+			if err := a.Unstage(ctx, repo, []string{"README.md", "gone.txt", "new file.txt"}, false); err != nil {
+				t.Fatalf("Unstage: %v", err)
+			}
+			cs = changes(t, a, repo)
+			if !slices.Equal(paths(cs.Staged), []string{glob}) || !slices.Equal(paths(cs.Unstaged), []string{"README.md", "gone.txt"}) ||
+				!slices.Equal(paths(cs.Untracked), []string{"new file.txt"}) {
+				t.Fatalf("after unstage: %+v", cs)
+			}
+			if b, _ := os.ReadFile(filepath.Join(string(repo), "README.md")); string(b) != "edited\n" {
+				t.Fatalf("unstage touched the worktree: %q", b)
+			}
+		})
 	}
 }
 
