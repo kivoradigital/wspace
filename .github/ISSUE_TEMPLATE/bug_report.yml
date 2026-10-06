@@ -1,0 +1,83 @@
+name: Bug report
+description: Report something in wspace that does not work as expected.
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Search the
+        [existing issues](https://github.com/kivoradigital/wspace/issues?q=is%3Aissue)
+        first, and **never post security vulnerabilities here**: follow
+        [SECURITY.md](https://github.com/kivoradigital/wspace/blob/main/SECURITY.md).
+        Remove private paths, repository names, tokens and credentials from
+        anything you paste.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: A clear description of the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The exact commands you ran, in order.
+      placeholder: |
+        1. wspace create feature-x --project api
+        2. wspace status feature-x
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did it happen?
+      options:
+        - CLI
+        - MCP server (AI agent)
+        - JSON-lines RPC (wspace rpc)
+        - Installation or packaging
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: wspace version
+      description: Output of `wspace version`.
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system and architecture
+      placeholder: macOS 26 arm64, Ubuntu 24.04 amd64, Windows 11 amd64...
+    validations:
+      required: true
+  - type: input
+    id: git
+    attributes:
+      label: git version
+      description: Output of `git --version`.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output
+      description: Relevant output, ideally with `--verbose` or `--json`.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched the existing issues and this is not a duplicate.
+          required: true
+        - label: I removed private paths, repository names and credentials from this report.
+          required: true
