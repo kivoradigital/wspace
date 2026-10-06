@@ -84,7 +84,46 @@ every commit (`git commit -s`) like any contributor.
 
 ## Releases
 
-The Chocolatey package needs the `choco` binary, so the release job that runs
-GoReleaser must run on Windows (or skip Chocolatey). Check the configuration
-with `goreleaser check` and a local dry run with
-`goreleaser release --snapshot --clean --skip=publish`.
+Pushing a `v*` tag runs [release.yml](workflows/release.yml): tests, then
+GoReleaser publishes the GitHub release (archives, `.deb`, `.rpm`,
+checksums), updates
+[kivoradigital/homebrew-tap](https://github.com/kivoradigital/homebrew-tap)
+and [kivoradigital/scoop-bucket](https://github.com/kivoradigital/scoop-bucket),
+and opens a pull request to `microsoft/winget-pkgs` from the
+`kivoradigital/winget-pkgs` fork. Every archive gets a signed build
+provenance attestation.
+
+One-time setup: create a **classic** personal access token with only the
+`public_repo` scope and store it as the `RELEASE_TOKEN` secret:
+
+```sh
+gh secret set RELEASE_TOKEN -R kivoradigital/wspace
+```
+
+Cutting a release:
+
+1. Make sure CI is green on `main` and update `CHANGELOG.md` through a pull
+   request.
+2. Check the configuration: `goreleaser check`, and optionally a dry run with
+   `goreleaser release --snapshot --clean --skip=publish,chocolatey`.
+3. Tag `main` and push the tag (only organization admins can):
+
+   ```sh
+   git switch main && git pull
+   git tag -a v0.1.0 -m "v0.1.0"
+   git push origin v0.1.0
+   ```
+
+4. Watch the **Release** workflow, then check the release page, the tap and
+   bucket commits, and the winget pull request (Microsoft reviews it; the
+   first submission can take a few days).
+5. Anyone can verify a download with
+   `gh attestation verify <file> -R kivoradigital/wspace`.
+
+Tags with a prerelease suffix (`v0.2.0-rc.1`) publish the GitHub release but
+skip Homebrew, Scoop and winget.
+
+Chocolatey is configured but disabled: it needs a chocolatey.org API key and
+the `choco` binary, so it has to run on a Windows runner. Enable it by adding
+the key as a secret, setting `api_key` and removing `skip_publish` in
+`.goreleaser.yaml`, and adding a Windows job.

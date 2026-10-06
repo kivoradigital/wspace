@@ -1,0 +1,49 @@
+name: Release
+
+# Runs when a maintainer pushes a v* tag (the release-tags ruleset lets only
+# organization admins create them). See .github/MAINTAINING.md.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write     # create the GitHub release and upload assets
+      id-token: write     # sign build provenance attestations
+      attestations: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.mod
+      - name: go test
+        run: go test ./...
+      - name: GoReleaser
+        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
+        with:
+          distribution: goreleaser
+          version: v2.18.2
+          args: release --clean --skip=chocolatey
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Classic personal access token with the public_repo scope: writes
+          # the Homebrew tap, the Scoop bucket and the winget-pkgs fork, and
+          # opens the pull request against microsoft/winget-pkgs.
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*.deb
+            dist/*.rpm
+            dist/checksums.txt
