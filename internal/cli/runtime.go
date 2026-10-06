@@ -44,6 +44,12 @@ type Runtime struct {
 	// app.CheckForUpdate's own handling of a zero-value Coordinates).
 	RepoCoordinates domain.RepoCoordinates
 
+	// BundledBy is buildinfo.BundledBy, handed down by cmd/wspace like
+	// Version: the display name of the desktop app that embeds this CLI,
+	// empty for a standalone build. A bundled CLI notes it in `version` and
+	// never checks for an update of its own.
+	BundledBy string
+
 	// ServeRPC and ServeMCP run the machine-facing servers (`wspace rpc`,
 	// `wspace mcp serve`) over the given streams until EOF or ctx is
 	// cancelled. cmd/wspace builds them over internal/engine and injects

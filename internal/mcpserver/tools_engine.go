@@ -44,12 +44,15 @@ func registerEngineTools(s *mcp.Server, eng *engine.Engine) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name: "check_update",
 		Description: "Ask GitHub whether a newer wspace release exists. It contacts the network but never fails on a network problem: " +
-			"it then reports unavailable=true. Use only when the user asks about updates.",
+			"it then reports unavailable=true. When bundledBy is set, wspace is bundled with that app and updates only with it: " +
+			"no network call is made, and never suggest updating wspace separately. Use only when the user asks about updates.",
 		Annotations: &mcp.ToolAnnotations{Title: "Check for update", ReadOnlyHint: true, IdempotentHint: true, OpenWorldHint: boolPtr(true)},
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ NoInput) (*mcp.CallToolResult, engine.UpdateCheckResult, error) {
 		res, err := eng.CheckForUpdate(ctx)
 		return done(res, err, func(r engine.UpdateCheckResult) string {
 			switch {
+			case r.BundledBy != "":
+				return fmt.Sprintf("wspace %s is bundled with %s and updates with it.", r.CurrentVersion, r.BundledBy)
 			case r.Unavailable:
 				return "Could not determine whether an update is available."
 			case r.Available:

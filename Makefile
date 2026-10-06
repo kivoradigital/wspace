@@ -10,13 +10,19 @@ COMMIT     ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo none)
 DATE       ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 REPO_OWNER ?= kivoradigital
 REPO_NAME  ?= wspace
+# BUNDLED_BY is the display name of a desktop app that embeds and builds this
+# CLI (`make build BUNDLED_BY="App Name"`). A bundled CLI is updated only with
+# that app, so it never checks for an update of its own. Package-manager
+# builds (GoReleaser) leave it empty.
+BUNDLED_BY ?=
 
 LDFLAGS := -s -w \
 	-X $(MODULE)/internal/buildinfo.Version=$(VERSION) \
 	-X $(MODULE)/internal/buildinfo.Commit=$(COMMIT) \
 	-X $(MODULE)/internal/buildinfo.Date=$(DATE) \
 	-X $(MODULE)/internal/buildinfo.RepoOwner=$(REPO_OWNER) \
-	-X $(MODULE)/internal/buildinfo.RepoName=$(REPO_NAME)
+	-X $(MODULE)/internal/buildinfo.RepoName=$(REPO_NAME) \
+	-X '$(MODULE)/internal/buildinfo.BundledBy=$(BUNDLED_BY)'
 
 .PHONY: build test test-short test-e2e vet fmt lint clean dist release-vars
 
@@ -67,7 +73,7 @@ dist:
 	GOOS=linux   GOARCH=arm64 CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o dist/wspace-linux-arm64      ./cmd/wspace
 	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o dist/wspace-windows-amd64.exe ./cmd/wspace
 
-# release-vars prints the exact VERSION/COMMIT/DATE/REPO_OWNER/REPO_NAME
+# release-vars prints the exact VERSION/COMMIT/DATE/REPO_OWNER/REPO_NAME/BUNDLED_BY
 # this Makefile would inject, so a release script (or a human) can confirm
 # them — especially REPO_OWNER/REPO_NAME — before running `make dist`.
 release-vars:
@@ -76,3 +82,4 @@ release-vars:
 	@echo "DATE=$(DATE)"
 	@echo "REPO_OWNER=$(REPO_OWNER)"
 	@echo "REPO_NAME=$(REPO_NAME)"
+	@echo "BUNDLED_BY=$(BUNDLED_BY)"

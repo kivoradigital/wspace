@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `BUNDLED_BY` build flag (`make build BUNDLED_BY="App Name"`) for desktop
+  apps that embed the CLI. A bundled CLI never checks for updates on its own:
+  `wspace version` adds a second line `(bundled with App Name)`,
+  `wspace version --check` says it updates with that app, and
+  `engine.checkUpdate` and the MCP `check_update` tool return an additive
+  `bundledBy` field. See `docs/bundling.md`.
+
 ## [0.1.0] - 2026-10-06
 
 ### Added

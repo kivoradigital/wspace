@@ -67,3 +67,11 @@ func TestBuildinfo_IsRelease(t *testing.T) {
 		t.Fatal("IsRelease() = false for Version = \"v1.0.0\", want true")
 	}
 }
+
+// TestBuildinfo_BundledByEmptyByDefault: package-manager builds never set
+// BundledBy, so an unflagged binary must not claim to be bundled.
+func TestBuildinfo_BundledByEmptyByDefault(t *testing.T) {
+	if buildinfo.BundledBy != "" {
+		t.Fatalf("BundledBy = %q, want empty by default", buildinfo.BundledBy)
+	}
+}

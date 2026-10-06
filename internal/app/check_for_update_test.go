@@ -100,3 +100,52 @@ func TestCheckForUpdate_ForwardsUnavailableFromChecker(t *testing.T) {
 		t.Fatalf("CheckForUpdate() = %+v, want Unavailable=true Available=false", got)
 	}
 }
+
+// failingReleaseChecker fails the test the moment anything queries it: a
+// bundled build must never reach the network, not merely ignore the answer.
+type failingReleaseChecker struct{ t *testing.T }
+
+func (f failingReleaseChecker) Latest(context.Context, domain.RepoCoordinates) (domain.ReleaseInfo, error) {
+	f.t.Helper()
+	f.t.Fatal("ReleaseChecker.Latest called for a bundled build: it must never touch the network")
+	return domain.ReleaseInfo{}, nil
+}
+
+// TestCheckForUpdate_BundledBuildNeverCallsChecker covers the bundled-CLI
+// contract: a CLI embedded in a desktop app is updated only together with
+// that app, so CheckForUpdate reports who bundles it — neither available
+// nor unavailable — without ever calling the checker, even when real
+// repository coordinates were injected.
+func TestCheckForUpdate_BundledBuildNeverCallsChecker(t *testing.T) {
+	got, err := app.CheckForUpdate(context.Background(), app.CheckForUpdateDeps{Checker: failingReleaseChecker{t: t}}, app.CheckForUpdateInput{
+		Coordinates:    domain.RepoCoordinates{Owner: "acme", Repo: "widget"},
+		CurrentVersion: "v1.0.0",
+		BundledBy:      "Wspace Dev",
+	})
+	if err != nil {
+		t.Fatalf("CheckForUpdate() unexpected error: %v", err)
+	}
+	want := app.CheckForUpdateResult{CurrentVersion: "v1.0.0", BundledBy: "Wspace Dev"}
+	if got != want {
+		t.Fatalf("CheckForUpdate() = %+v, want %+v", got, want)
+	}
+}
+
+// TestCheckForUpdate_NotBundledLeavesBundledByEmpty proves the default
+// (package-manager) build is unchanged: the checker is still called and the
+// result never claims to be bundled.
+func TestCheckForUpdate_NotBundledLeavesBundledByEmpty(t *testing.T) {
+	checker := portstest.NewFakeReleaseChecker()
+	checker.Response = domain.ReleaseInfo{Tag: "v1.0.0"}
+
+	got, err := app.CheckForUpdate(context.Background(), app.CheckForUpdateDeps{Checker: checker}, app.CheckForUpdateInput{
+		Coordinates:    domain.RepoCoordinates{Owner: "acme", Repo: "widget"},
+		CurrentVersion: "v1.0.0",
+	})
+	if err != nil {
+		t.Fatalf("CheckForUpdate() unexpected error: %v", err)
+	}
+	if checker.Calls != 1 || got.BundledBy != "" {
+		t.Fatalf("CheckForUpdate() = %+v (calls=%d), want one checker call and an empty BundledBy", got, checker.Calls)
+	}
+}

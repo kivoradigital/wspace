@@ -89,24 +89,32 @@ func (e *Engine) Doctor(ctx context.Context, p InfoParams, emit ProgressFunc) (D
 
 // UpdateCheckResult is engine.checkUpdate's result. Unavailable means
 // nothing could be determined (offline, rate-limited, unbranded build).
+// BundledBy, when set, names the app this CLI is bundled with: the app
+// updates it, so Available and Unavailable are both false and no network
+// call was made.
 type UpdateCheckResult struct {
 	CurrentVersion string `json:"currentVersion"`
 	LatestTag      string `json:"latestTag,omitempty"`
 	Available      bool   `json:"available"`
 	Unavailable    bool   `json:"unavailable"`
+	BundledBy      string `json:"bundledBy,omitempty"`
 }
 
 // CheckForUpdate asks the release checker for the latest release. It never
-// fails on a network problem; that is reported as Unavailable.
+// fails on a network problem; that is reported as Unavailable. A bundled
+// engine never asks: it reports BundledBy instead.
 func (e *Engine) CheckForUpdate(ctx context.Context) (UpdateCheckResult, error) {
-	if e.deps.Checker == nil {
+	if e.deps.Checker == nil && e.deps.BundledBy == "" {
 		return UpdateCheckResult{CurrentVersion: e.deps.Version, Unavailable: true}, nil
 	}
 	res, err := app.CheckForUpdate(ctx, app.CheckForUpdateDeps{Checker: e.deps.Checker}, app.CheckForUpdateInput{
-		Coordinates: e.deps.Coordinates, CurrentVersion: e.deps.Version,
+		Coordinates: e.deps.Coordinates, CurrentVersion: e.deps.Version, BundledBy: e.deps.BundledBy,
 	})
 	if err != nil {
 		return UpdateCheckResult{}, wrap(err)
 	}
-	return UpdateCheckResult{CurrentVersion: res.CurrentVersion, LatestTag: res.LatestTag, Available: res.Available, Unavailable: res.Unavailable}, nil
+	return UpdateCheckResult{
+		CurrentVersion: res.CurrentVersion, LatestTag: res.LatestTag,
+		Available: res.Available, Unavailable: res.Unavailable, BundledBy: res.BundledBy,
+	}, nil
 }

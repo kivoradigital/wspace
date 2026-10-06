@@ -103,7 +103,7 @@ Paths in the examples are illustrative. Fields marked optional may be omitted.
 | `engine.version` | — | `{"version":"dev"}` |
 | `engine.info` | `context?` | Config directory and the context's resolved options with the layer that won each one. |
 | `engine.doctor` | `context?` | `{"gitTooOld":false,"prunedWorktrees":0}`. Findings are also streamed as `warn` events. It only prunes stale worktree registrations. |
-| `engine.checkUpdate` | — | `{"currentVersion":"dev","available":false,"unavailable":true}` (`latestTag` when known). Never fails on network problems; reports `unavailable`. |
+| `engine.checkUpdate` | — | `{"currentVersion":"dev","available":false,"unavailable":true}` (`latestTag` when known). Never fails on network problems; reports `unavailable`. A CLI bundled with a desktop app makes no network request and returns `{"currentVersion":"0.1.0","available":false,"unavailable":false,"bundledBy":"App Name"}`: the app updates it (see [bundling](bundling.md)). `bundledBy` is omitted otherwise. |
 
 Call the handshake first and compare `protocolVersion` with the version the client was built for. A mismatch means the client and the engine are out of sync.
 

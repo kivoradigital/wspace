@@ -25,6 +25,7 @@ Load this skill when:
 - Commit (`repo_commit_changes`) and push (`repo_push`) only when the user asked, with a commit message the user approved. Never amend, skip hooks, or force-push (the tools cannot).
 - On `identity_missing`, show the user `data.commands`; never run `git config` for them. On `hook_failed`, report `data.output`; never bypass the hook.
 - On `no_upstream`, ask before publishing (`setUpstream: true`). On `push_rejected`, suggest `repo_pull_ff` or `update_repo`, never a force push.
+- When `check_update` returns `bundledBy` (or `wspace version` says "bundled with"), wspace updates only with that app: never suggest updating wspace separately.
 - `repo_discard` and `repo_delete_untracked` lose work: call them with `confirm: false` first, show the files, and confirm only after the user agrees. `repo_discard` keeps a backup patch; name its path.
 
 ## Decision Gates

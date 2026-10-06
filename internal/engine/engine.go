@@ -23,6 +23,9 @@ type Deps struct {
 	Checker     ports.ReleaseChecker
 	Version     string
 	Coordinates domain.RepoCoordinates
+	// BundledBy names the desktop app that embeds this CLI (empty for a
+	// standalone build); a bundled engine never checks for updates.
+	BundledBy string
 	// Presence records live MCP server sessions (nil: presence is off and
 	// MCPSessions reports none).
 	Presence ports.PresenceStore

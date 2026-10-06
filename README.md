@@ -232,6 +232,11 @@ with `-ldflags` (see the [Makefile](Makefile)): `Version`, `Commit`, `Date`,
 `RepoOwner` and `RepoName` in `internal/buildinfo`. A plain `go build` or
 `go install` reports itself as a development build and has no update check.
 
+Desktop apps that embed the CLI build it with
+`make build BUNDLED_BY="App Name" VERSION=<cli version>`. A bundled CLI never
+checks for an update of its own; the app updates it. See
+[docs/bundling.md](docs/bundling.md).
+
 ### Architecture
 
 wspace follows a hexagonal (ports and adapters) architecture. The import
@@ -273,7 +278,7 @@ Conventions worth knowing before you change code:
 | `cmd/wspace` | the `main` package |
 | `internal/` | engine, interfaces and adapters (see above) |
 | `skills/` | the `wspace-workspaces` agent skill |
-| `docs/` | [MCP server](docs/mcp.md) and [RPC contract](docs/rpc-contract.md) |
+| `docs/` | [MCP server](docs/mcp.md), [RPC contract](docs/rpc-contract.md) and [bundling in a desktop app](docs/bundling.md) |
 | `openspec/specs/` | behavior specifications per capability |
 | `packaging/` | Linux `.deb`, Windows installer and winget templates, icons, [release checklist](packaging/RELEASE_CHECKLIST.md) |
 | `scripts/` | development helpers |

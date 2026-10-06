@@ -51,3 +51,19 @@ The system MUST expose the current version and the last known update-check resul
 - GIVEN the same cached result
 - WHEN a client calls `engine.checkUpdate`
 - THEN it reports the same version and update-available state as the CLI
+
+### Requirement: Bundled builds never check for updates
+
+A binary built with a non-empty `BundledBy` (the display name of a desktop app that embeds and builds the CLI) MUST NOT query the releases endpoint. It MUST report that it is bundled with that app, neither available nor unavailable, on the CLI and through `engine.checkUpdate` (`bundledBy`). The first line of `wspace version` MUST stay `wspace version <version>` in every build. A build with an empty `BundledBy` MUST behave exactly as before.
+
+#### Scenario: Bundled CLI reports its app instead of checking
+
+- GIVEN the binary was built with `BundledBy` set to `App`
+- WHEN `wspace version --check` runs or a client calls `engine.checkUpdate`
+- THEN no network request is issued, the CLI prints that wspace is bundled with `App` and updates with it, and the RPC result carries `bundledBy: "App"` with `available` and `unavailable` both false
+
+#### Scenario: Version line stays parseable
+
+- GIVEN the binary was built with `BundledBy` set to `App`
+- WHEN `wspace version` runs
+- THEN the first line is exactly `wspace version <version>` and the bundled note is on the second line
