@@ -2,13 +2,13 @@
 #
 # GoReleaser v2 configuration for the wspace CLI.
 #
-# Every publisher below (Homebrew tap, Scoop bucket, winget, Chocolatey) sets
-# skip_upload / skip_publish so that nothing is pushed anywhere until this
-# repository and its tap/bucket/winget repositories are public. Running
-# `goreleaser release --snapshot --clean` produces every artifact and manifest
-# under dist/ only. Remove the skip_* settings once publishing is intended
-# (see packaging/RELEASE_CHECKLIST.md). There is intentionally no release
-# workflow yet.
+# Releases run from .github/workflows/release.yml when a v* tag is pushed.
+# The Homebrew tap, Scoop bucket and winget fork are written with
+# RELEASE_TOKEN (a classic personal access token with the public_repo scope);
+# GITHUB_TOKEN cannot write to other repositories. skip_upload: auto skips
+# them for prerelease tags such as v1.0.0-rc.1. Chocolatey stays disabled
+# until a chocolatey.org API key exists. Dry run locally with
+# `goreleaser release --snapshot --clean --skip=publish,chocolatey`.
 version: 2
 
 project_name: wspace
@@ -102,6 +102,7 @@ homebrew_casks:
     repository:
       owner: kivoradigital
       name: homebrew-tap
+      token: "{{ .Env.RELEASE_TOKEN }}"
     directory: Casks
     homepage: https://github.com/kivoradigital/wspace
     description: Multi-repository git worktree workspaces (CLI, MCP server and RPC engine).
@@ -114,7 +115,7 @@ homebrew_casks:
           if OS.mac?
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/wspace"]
           end
-    skip_upload: true
+    skip_upload: auto
 
 scoops:
   - name: wspace
@@ -123,11 +124,12 @@ scoops:
     repository:
       owner: kivoradigital
       name: scoop-bucket
+      token: "{{ .Env.RELEASE_TOKEN }}"
     homepage: https://github.com/kivoradigital/wspace
     description: Multi-repository git worktree workspaces (CLI, MCP server and RPC engine).
     license: Apache-2.0
     commit_msg_template: "chore: update {{ .ProjectName }} to {{ .Tag }}"
-    skip_upload: true
+    skip_upload: auto
 
 winget:
   - name: wspace
@@ -150,6 +152,7 @@ winget:
     repository:
       owner: kivoradigital
       name: winget-pkgs
+      token: "{{ .Env.RELEASE_TOKEN }}"
       branch: "{{ .ProjectName }}-{{ .Version }}"
       pull_request:
         enabled: true
@@ -157,7 +160,7 @@ winget:
           owner: microsoft
           name: winget-pkgs
           branch: master
-    skip_upload: true
+    skip_upload: auto
 
 chocolateys:
   - name: wspace
@@ -181,6 +184,8 @@ chocolateys:
     release_notes: "https://github.com/kivoradigital/wspace/releases/tag/{{ .Tag }}"
     # api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"  # add when publishing is enabled
     source_repo: "https://push.chocolatey.org/"
+    # Enable with api_key and a Windows runner (choco is needed to pack).
+    # Enable with api_key and a Windows runner (choco is needed to pack).
     skip_publish: true
 
 release:
