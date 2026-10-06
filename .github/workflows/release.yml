@@ -41,11 +41,9 @@ jobs:
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             echo "value=release --snapshot --clean --skip=publish" >> "$GITHUB_OUTPUT"
-          elif [[ "${GITHUB_REF_NAME}" == *-* ]]; then
-            # Prerelease (v1.2.0-rc.1): no Chocolatey; skip_upload: auto in
-            # .goreleaser.yaml also skips Homebrew, Scoop and winget.
-            echo "value=release --clean --skip=chocolatey" >> "$GITHUB_OUTPUT"
           else
+            # Prereleases (v1.2.0-rc.1) skip Homebrew, Scoop and winget via
+            # skip_upload: auto, and the Chocolatey push step below.
             echo "value=release --clean" >> "$GITHUB_OUTPUT"
           fi
       - name: GoReleaser
@@ -60,7 +58,6 @@ jobs:
           # the Homebrew tap, the Scoop bucket and the winget-pkgs fork, and
           # opens the pull request against microsoft/winget-pkgs.
           RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
       - name: Upload dry-run artifacts
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -88,3 +85,19 @@ jobs:
             dist/*.rpm
             dist/*.nupkg
             dist/checksums.txt
+      # Last and non-fatal: chocolatey.org can reject a push (moderation,
+      # outages) after everything else is already published and attested.
+      # A failure shows up as a warning on the run without failing it.
+      - name: Push to Chocolatey
+        if: github.event_name == 'push' && !contains(github.ref_name, '-')
+        continue-on-error: true
+        env:
+          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+        run: |
+          set -euo pipefail
+          for pkg in dist/*.nupkg; do
+            if ! choco push "$pkg" --source https://push.chocolatey.org/ --api-key "$CHOCOLATEY_API_KEY"; then
+              echo "::warning title=Chocolatey push failed::$(basename "$pkg") was not accepted by chocolatey.org; the rest of the release is published."
+              exit 1
+            fi
+          done

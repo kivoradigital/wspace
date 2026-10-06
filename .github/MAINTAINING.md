@@ -131,7 +131,11 @@ Tags with a prerelease suffix (`v0.2.0-rc.1`) publish the GitHub release but
 skip Homebrew, Scoop, winget and Chocolatey.
 
 The release job runs on Windows because packing the Chocolatey package needs
-the `choco` binary; the package is pushed with the `CHOCOLATEY_API_KEY`
-secret and goes through chocolatey.org moderation (days to weeks for the
-first version). The package downloads the zip from the GitHub release instead
+the `choco` binary. GoReleaser only packs it; the last step pushes it with
+the `CHOCOLATEY_API_KEY` secret and is non-fatal, so a chocolatey.org
+rejection leaves a warning on the run but never skips the attestations or
+fails the release. Every version goes through chocolatey.org moderation
+(days to weeks for the first one). If a push was rejected, a later release
+pushes the newer version; chocolatey.org returned 403 for v0.2.0 while
+v0.1.0 was still in moderation. The package downloads the zip from the GitHub release instead
 of embedding it.
