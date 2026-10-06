@@ -195,6 +195,9 @@ func TestDiscardChanges_KeepsOnlyTheNewestBackups(t *testing.T) {
 	f := discardFixture(t)
 	dir := f.fs.Paths().Cache.Join("discarded")
 	base := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	// Every file gets the same mod time, as on a coarse clock: the new
+	// "api-" backup must still outrank the older "web-" ones.
+	f.fs.Now = func() time.Time { return base }
 	for i := 0; i < app.DiscardBackupsKept+3; i++ {
 		ts := base.Add(time.Duration(i) * time.Minute)
 		if err := f.fs.WriteFile(dir.Join("web-"+ts.Format("20060102T150405.000Z")+".patch"), []byte("x"), 0o600); err != nil {

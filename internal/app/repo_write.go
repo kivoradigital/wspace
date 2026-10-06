@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"path"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -357,16 +358,23 @@ func writeDiscardBackup(deps Deps, t inspectTarget, patch string) (domain.Path, 
 }
 
 // pruneDiscardBackups removes all but the newest DiscardBackupsKept
-// patches (newest by modification time, then by name). Best-effort: a
-// failure keeps a file, never loses the new backup.
+// patches (newest by modification time, then by the timestamp in the name,
+// then by name). Best-effort: a failure keeps a file, never loses the new
+// backup.
+//
+// Modification times can tie (a coarse filesystem or OS clock), so the
+// tie-break must not be the plain name: its leading repo alias would let
+// an older "web-..." backup outrank the "api-..." one just written.
 func pruneDiscardBackups(deps Deps, dir domain.Path) {
 	files, err := deps.FS.ListFiles(dir)
 	if err != nil {
 		return
 	}
 	type backup struct {
-		name string
-		mod  time.Time
+		name  string
+		mod   time.Time
+		stamp string
+		seq   int
 	}
 	var list []backup
 	for _, f := range files {
@@ -374,20 +382,45 @@ func pruneDiscardBackups(deps Deps, dir domain.Path) {
 			continue
 		}
 		mod, _ := deps.FS.ModTime(dir.Join(f))
-		list = append(list, backup{f, mod})
+		stamp, seq := backupStamp(f)
+		list = append(list, backup{f, mod, stamp, seq})
 	}
 	if len(list) <= DiscardBackupsKept {
 		return
 	}
 	sort.Slice(list, func(i, j int) bool {
-		if !list[i].mod.Equal(list[j].mod) {
-			return list[i].mod.After(list[j].mod)
+		a, b := list[i], list[j]
+		switch {
+		case !a.mod.Equal(b.mod):
+			return a.mod.After(b.mod)
+		case a.stamp != b.stamp:
+			return a.stamp > b.stamp
+		case a.seq != b.seq:
+			return a.seq > b.seq
 		}
-		return list[i].name > list[j].name
+		return a.name > b.name
 	})
 	for _, b := range list[DiscardBackupsKept:] {
 		_ = deps.FS.RemoveAll(dir.Join(b.name))
 	}
+}
+
+// discardBackupName matches writeDiscardBackup's "<alias>-<stamp>[-<n>].patch".
+var discardBackupName = regexp.MustCompile(`-(\d{8}T\d{6}\.\d{3}Z)(?:-(\d+))?\.patch$`)
+
+// backupStamp returns the UTC timestamp (sortable as text) and the
+// collision counter (1 when absent) of a discard backup's name, or ("", 0)
+// for a name writeDiscardBackup did not produce.
+func backupStamp(name string) (string, int) {
+	m := discardBackupName.FindStringSubmatch(name)
+	if m == nil {
+		return "", 0
+	}
+	seq := 1
+	if m[2] != "" {
+		seq, _ = strconv.Atoi(m[2])
+	}
+	return m[1], seq
 }
 
 // CommitInput is one commit's message.

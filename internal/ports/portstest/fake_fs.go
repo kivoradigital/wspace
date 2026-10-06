@@ -45,6 +45,10 @@ type FakeFS struct {
 	// app.Install's "no writable, PATH-listed directory" path) without
 	// needing a real, unwritable filesystem in a unit test.
 	DenyWrite func(domain.Path) bool
+
+	// Now, when non-nil, supplies the modification time WriteFile records
+	// (time.Now otherwise), so a test can pin mod times, ties included.
+	Now func() time.Time
 }
 
 // NewFakeFS constructs a FakeFS whose Paths() are rooted under t.TempDir().
@@ -207,7 +211,11 @@ func (f *FakeFS) WriteFile(p domain.Path, data []byte, _ fs.FileMode) error {
 		return fmt.Errorf("fakefs: permission denied writing %q", p)
 	}
 	f.files[p] = append([]byte(nil), data...)
-	f.modTimes[p] = time.Now()
+	if f.Now != nil {
+		f.modTimes[p] = f.Now()
+	} else {
+		f.modTimes[p] = time.Now()
+	}
 	f.Writes = append(f.Writes, p)
 	return nil
 }
