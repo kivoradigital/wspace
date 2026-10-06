@@ -17,9 +17,19 @@ import (
 // Windows user Path. env carries every environment variable Install reads
 // (PATH, SHELL, ZDOTDIR, XDG_CONFIG_HOME, LOCALAPPDATA); "$HOME" inside a
 // value is replaced by the fake's home so PATH entries match it exactly.
+//
+// For a simulated Linux or macOS the fake's home is a fixed POSIX path, not
+// t.TempDir(): on a Windows host that would be "C:/...", whose drive colon
+// splits a ":"-separated PATH entry in two. The FakeFS is in memory, so the
+// path never needs to exist.
 func installDeps(t *testing.T, goos, executable string, env map[string]string) (app.InstallDeps, *portstest.FakeFS, *portstest.FakeUserPath) {
 	t.Helper()
-	fs := portstest.NewFakeFS(t)
+	var fs *portstest.FakeFS
+	if goos == "windows" {
+		fs = portstest.NewFakeFS(t)
+	} else {
+		fs = portstest.NewFakeFS(posixRoot("/home/tester"))
+	}
 	home := string(fs.Paths().Home)
 	userPath := &portstest.FakeUserPath{}
 	deps := app.InstallDeps{
@@ -45,6 +55,12 @@ func installDeps(t *testing.T, goos, executable string, env map[string]string) (
 	}
 	return deps, fs, userPath
 }
+
+// posixRoot is a FakeFS root provider that always returns the same POSIX
+// path.
+type posixRoot string
+
+func (r posixRoot) TempDir() string { return string(r) }
 
 func read(t *testing.T, fs *portstest.FakeFS, p domain.Path) string {
 	t.Helper()
