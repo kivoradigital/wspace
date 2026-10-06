@@ -6,8 +6,9 @@
 # The Homebrew tap, Scoop bucket and winget fork are written with
 # RELEASE_TOKEN (a classic personal access token with the public_repo scope);
 # GITHUB_TOKEN cannot write to other repositories. skip_upload: auto skips
-# them for prerelease tags such as v1.0.0-rc.1. Chocolatey stays disabled
-# until a chocolatey.org API key exists. Dry run locally with
+# them for prerelease tags such as v1.0.0-rc.1. Chocolatey is pushed with
+# CHOCOLATEY_API_KEY and needs the choco binary, so releases run on Windows.
+# Dry run locally (no choco) with
 # `goreleaser release --snapshot --clean --skip=publish,chocolatey`.
 version: 2
 
@@ -51,6 +52,10 @@ archives:
         formats:
           - zip
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    # Releases are built on Windows, whose files carry no executable bit;
+    # builds_info forces 0755 on the binaries inside every archive.
+    builds_info:
+      mtime: "{{ .CommitDate }}"
     files:
       - LICENSE
       - NOTICE
@@ -182,11 +187,10 @@ chocolateys:
       wspace manages multi-repository workspaces built from git worktrees,
       with a CLI, an MCP server for AI agents and a JSON-lines RPC engine.
     release_notes: "https://github.com/kivoradigital/wspace/releases/tag/{{ .Tag }}"
-    # api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"  # add when publishing is enabled
+    api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"
     source_repo: "https://push.chocolatey.org/"
-    # Enable with api_key and a Windows runner (choco is needed to pack).
-    # Enable with api_key and a Windows runner (choco is needed to pack).
-    skip_publish: true
+    # Prerelease tags skip Chocolatey in release.yml (--skip=chocolatey).
+    skip_publish: false
 
 release:
   github:
