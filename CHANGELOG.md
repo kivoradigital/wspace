@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-06
+
 ### Added
 
 - Initial open-source release of wspace under the Apache License 2.0.
@@ -23,5 +25,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - JSON-lines RPC engine (`wspace rpc`) for desktop clients, documented in
   `docs/rpc-contract.md`.
 - Update check against GitHub releases.
-- Packaging definitions: GoReleaser configuration, Inno Setup script,
-  Debian package script and winget manifest templates.
+- `wspace create --copy-node-modules` copies `node_modules` into new
+  worktrees, copy-on-write where the file system supports it.
+- Releases for macOS, Linux and Windows (amd64 and arm64): archives, `.deb`,
+  `.rpm`, a Homebrew cask, Scoop and winget manifests and a Chocolatey
+  package, all with signed build provenance attestations.
+
+### Fixed
+
+- Stash diffs no longer contain garbage path prefixes with git 2.55.
+- On Windows: agent CLIs installed as `.cmd` shims are found and run, commit
+  hooks are detected, cancelled git commands no longer hang, and discarding
+  changes keeps the newest backup when file times tie.
+
+[Unreleased]: https://github.com/kivoradigital/wspace/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/kivoradigital/wspace/releases/tag/v0.1.0
