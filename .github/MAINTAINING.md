@@ -20,16 +20,20 @@ current plan, so they are applied when the repository goes public.
 
 ## Going public checklist
 
-1. Replace `[CONTACT EMAIL TO BE DEFINED]` in
-   [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) with a real contact address.
-2. Run a final sweep for private data and paid-app references.
-3. Make the repository public:
+1. Send a test message to conduct@kivoradigital.com (the
+   [Code of Conduct](../CODE_OF_CONDUCT.md) contact) and confirm it arrives.
+2. Make sure every maintainer has two-factor authentication, then require it
+   for the organization (**Organization settings → Authentication
+   security**).
+3. Run a final sweep for secrets (`gitleaks git --log-opts=--all .`),
+   private data and paid-app references.
+4. Make the repository public:
 
    ```sh
    gh repo edit kivoradigital/wspace --visibility public --accept-visibility-change-consequences
    ```
 
-4. Protect `main` and the release tags with the rulesets in
+5. Protect `main` and the release tags with the rulesets in
    [rulesets/](rulesets):
 
    ```sh
@@ -37,7 +41,7 @@ current plan, so they are applied when the repository goes public.
    gh api -X POST repos/kivoradigital/wspace/rulesets --input .github/rulesets/release-tags.json
    ```
 
-5. Require approval before running workflows from every external
+6. Require approval before running workflows from every external
    contributor:
 
    ```sh
@@ -45,15 +49,15 @@ current plan, so they are applied when the repository goes public.
      -f approval_policy=all_external_contributors
    ```
 
-6. Enable private vulnerability reporting (used by SECURITY.md):
+7. Enable private vulnerability reporting (used by SECURITY.md):
 
    ```sh
    gh api -X PUT repos/kivoradigital/wspace/private-vulnerability-reporting
    ```
 
-7. In **Settings → Code security**, enable secret scanning with push
+8. In **Settings → Code security**, enable secret scanning with push
    protection and Dependabot alerts.
-8. Open a test pull request from a fork and confirm that CI waits for
+9. Open a test pull request from a fork and confirm that CI waits for
    approval, the DCO check runs, and the merge button is blocked until every
    required check passes.
 
@@ -71,3 +75,16 @@ wait forever for a check that no longer exists.
 
 Organization admins can bypass both rulesets for emergencies. Use that
 sparingly; normal work goes through pull requests like everyone else's.
+
+## Commit identity
+
+Commit with your GitHub noreply address (`<id>+<login>@users.noreply.github.com`)
+so personal email addresses never appear in the public history, and sign off
+every commit (`git commit -s`) like any contributor.
+
+## Releases
+
+The Chocolatey package needs the `choco` binary, so the release job that runs
+GoReleaser must run on Windows (or skip Chocolatey). Check the configuration
+with `goreleaser check` and a local dry run with
+`goreleaser release --snapshot --clean --skip=publish`.
