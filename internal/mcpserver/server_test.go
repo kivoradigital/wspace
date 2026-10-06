@@ -41,9 +41,49 @@ type fixture struct {
 	progress *progressLog
 }
 
+// progressLog records progress notifications at both ends: sent counts
+// them as the server sends them (synchronously, inside the tool call), and
+// events holds them as the client receives them. The client handles
+// notifications on its own goroutine, so a tool result can reach the test
+// before the notifications sent ahead of it; sent is the exact count to
+// wait for.
 type progressLog struct {
 	mu     sync.Mutex
+	sent   int
 	events []*mcp.ProgressNotificationParams
+}
+
+func (p *progressLog) countSent(next mcp.MethodHandler) mcp.MethodHandler {
+	return func(ctx context.Context, method string, req mcp.Request) (mcp.Result, error) {
+		if method == "notifications/progress" {
+			p.mu.Lock()
+			p.sent++
+			p.mu.Unlock()
+		}
+		return next(ctx, method, req)
+	}
+}
+
+func (p *progressLog) sentCount() int {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.sent
+}
+
+// waitReceived waits (bounded) until the client has handled every
+// notification the server sent, and returns them.
+func (p *progressLog) waitReceived(t *testing.T) []*mcp.ProgressNotificationParams {
+	t.Helper()
+	want := p.sentCount()
+	for deadline := time.Now().Add(5 * time.Second); ; time.Sleep(5 * time.Millisecond) {
+		events := p.all()
+		if len(events) >= want {
+			return events
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("client received %d of %d progress notifications", len(events), want)
+		}
+	}
 }
 
 func (p *progressLog) add(ev *mcp.ProgressNotificationParams) {
@@ -100,6 +140,7 @@ func newFixture(t *testing.T) *fixture {
 	t.Helper()
 	f := newEngineFixture(t)
 	srv := mcpserver.New(f.eng, "1.2.3")
+	srv.AddSendingMiddleware(f.progress.countSent)
 	serverT, clientT := mcp.NewInMemoryTransports()
 	ctx := context.Background()
 	ss, err := srv.Connect(ctx, serverT, nil)
@@ -665,18 +706,10 @@ func TestCreateWorkspace_SendsProgressNotificationsWhenAsked(t *testing.T) {
 	if err != nil || res.IsError {
 		t.Fatalf("create_workspace = %v, %v", res, err)
 	}
-	// The SDK hands progress notifications to the client asynchronously, so
-	// the tool result can arrive before the last notification is processed:
-	// wait (bounded) for them instead of counting at the instant of return.
-	var events []*mcp.ProgressNotificationParams
-	for deadline := time.Now().Add(2 * time.Second); ; time.Sleep(10 * time.Millisecond) {
-		if events = f.progress.all(); len(events) >= 4 || time.Now().After(deadline) {
-			break
-		}
+	if n := f.progress.sentCount(); n < 4 {
+		t.Fatalf("sent %d progress notifications, want at least started+finished per repo", n)
 	}
-	if len(events) < 4 {
-		t.Fatalf("got %d progress notifications, want at least started+finished per repo", len(events))
-	}
+	events := f.progress.waitReceived(t)
 	last := 0.0
 	var messages []string
 	for _, ev := range events {
@@ -694,10 +727,11 @@ func TestCreateWorkspace_SendsProgressNotificationsWhenAsked(t *testing.T) {
 		t.Fatalf("result lacks per-repo entries: %s", structured(t, res))
 	}
 
-	// Without a progress token no notification is sent.
-	before := len(f.progress.all())
+	// Without a progress token no notification is sent. Counted where it
+	// is sent, so the check does not depend on delivery timing.
+	before := f.progress.sentCount()
 	_ = f.call(t, "create_workspace", map[string]any{"name": "quiet", "projects": []string{"web"}})
-	if len(f.progress.all()) != before {
+	if f.progress.sentCount() != before {
 		t.Fatal("progress sent without a progress token")
 	}
 }
