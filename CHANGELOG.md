@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-06
+
 ### Added
 
 - `BUNDLED_BY` build flag (`make build BUNDLED_BY="App Name"`) for desktop
@@ -47,5 +49,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hooks are detected, cancelled git commands no longer hang, and discarding
   changes keeps the newest backup when file times tie.
 
-[Unreleased]: https://github.com/kivoradigital/wspace/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/kivoradigital/wspace/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/kivoradigital/wspace/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/kivoradigital/wspace/releases/tag/v0.1.0
