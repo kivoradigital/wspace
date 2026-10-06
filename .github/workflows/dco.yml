@@ -23,6 +23,10 @@ jobs:
           failed=0
           for sha in $(git rev-list --no-merges "$BASE_SHA..$HEAD_SHA"); do
             author="$(git log -1 --format='%an <%ae>' "$sha")"
+            # GitHub Apps (Dependabot and similar) cannot sign off.
+            case "$author" in
+              *"[bot]@users.noreply.github.com>") echo "Skipping bot commit $sha"; continue ;;
+            esac
             if ! git log -1 --format='%(trailers:key=Signed-off-by,valueonly)' "$sha" | grep -qxF "$author"; then
               echo "::error::Commit $sha has no 'Signed-off-by: $author' trailer."
               failed=1
