@@ -8,8 +8,8 @@ Requirements: git 2.20 or newer on your PATH (check with `git --version`).
 
 Pick the archive for your system and CPU:
 
-  macOS, Apple Silicon (M1 and later)   wspace_<version>_darwin_arm64.tar.gz
-  macOS, Intel                          wspace_<version>_darwin_amd64.tar.gz
+  macOS, Apple Silicon (M1 and later)   wspace_<version>_macos_arm64.tar.gz
+  macOS, Intel                          wspace_<version>_macos_amd64.tar.gz
   Linux, Intel/AMD                      wspace_<version>_linux_amd64.tar.gz
   Linux, ARM                            wspace_<version>_linux_arm64.tar.gz
   Windows, Intel/AMD                    wspace_<version>_windows_amd64.zip
