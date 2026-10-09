@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- macOS binaries are signed with a Developer ID and notarized by Apple, so
+  Gatekeeper no longer blocks them.
+
 ## [0.2.2] - 2026-10-09
 
 ### Changed

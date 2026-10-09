@@ -194,6 +194,25 @@ chocolateys:
     # never breaks the rest of the release.
     skip_publish: true
 
+# Signs the macOS binaries with a Developer ID dedicated to this CLI and
+# notarizes them with Apple (quill, built into GoReleaser; works on any
+# runner). The credentials exist only in the protected `release`
+# environment, so dry runs and local snapshots skip this.
+notarize:
+  macos:
+    - enabled: '{{ ne (index .Env "MACOS_SIGN_P12") "" }}'
+      ids:
+        - wspace
+      sign:
+        certificate: "{{ .Env.MACOS_SIGN_P12 }}"
+        password: "{{ .Env.MACOS_SIGN_PASSWORD }}"
+      notarize:
+        issuer_id: "{{ .Env.MACOS_NOTARY_ISSUER_ID }}"
+        key_id: "{{ .Env.MACOS_NOTARY_KEY_ID }}"
+        key: "{{ .Env.MACOS_NOTARY_KEY }}"
+        wait: true
+        timeout: 20m
+
 release:
   github:
     owner: kivoradigital

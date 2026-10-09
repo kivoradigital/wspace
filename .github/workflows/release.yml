@@ -1,11 +1,15 @@
 name: Release
 
-# Runs when a maintainer pushes a v* tag (the release-tags ruleset lets only
-# organization admins create them). Run it by hand (workflow_dispatch) for a
-# dry run: a snapshot build that publishes nothing and uploads dist/ as an
-# artifact. See .github/MAINTAINING.md.
+# `release` runs when a maintainer pushes a v* tag (the release-tags ruleset
+# lets only organization admins create them). It uses the protected
+# `release` environment: a maintainer must approve the run, and only v* tags
+# can reach its secrets (the macOS signing and notarization credentials).
 #
-# It runs on Windows because the Chocolatey package needs the choco binary;
+# `dry-run` runs by hand (workflow_dispatch): a snapshot build that publishes
+# nothing, signs nothing, and uploads dist/ as an artifact. It has no access
+# to the environment. See .github/MAINTAINING.md.
+#
+# Both run on Windows because the Chocolatey package needs the choco binary;
 # Go cross-compiles every other platform, and .goreleaser.yaml forces 0755 on
 # the binaries inside the archives.
 on:
@@ -17,9 +21,49 @@ permissions:
   contents: read
 
 jobs:
+  dry-run:
+    name: dry run
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version-file: go.mod
+      - name: go test
+        run: go test ./...
+      - name: GoReleaser (snapshot)
+        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
+        with:
+          distribution: goreleaser
+          version: v2.18.2
+          args: release --snapshot --clean --skip=publish
+      - name: Upload dry-run artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*.deb
+            dist/*.rpm
+            dist/*.nupkg
+            dist/checksums.txt
+            dist/homebrew/**
+            dist/scoop/**
+            dist/winget/**
+          retention-days: 3
+
   release:
     name: release
+    if: github.event_name == 'push'
     runs-on: windows-latest
+    environment: release
     permissions:
       contents: write     # create the GitHub release and upload assets
       id-token: write     # sign build provenance attestations
@@ -36,46 +80,28 @@ jobs:
           go-version-file: go.mod
       - name: go test
         run: go test ./...
-      - name: Choose GoReleaser arguments
-        id: args
-        run: |
-          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
-            echo "value=release --snapshot --clean --skip=publish" >> "$GITHUB_OUTPUT"
-          else
-            # Prereleases (v1.2.0-rc.1) skip Homebrew, Scoop and winget via
-            # skip_upload: auto, and the Chocolatey push step below.
-            echo "value=release --clean" >> "$GITHUB_OUTPUT"
-          fi
+      # Prereleases (v1.2.0-rc.1) skip Homebrew, Scoop and winget via
+      # skip_upload: auto, and the Chocolatey push step below.
       - name: GoReleaser
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
         with:
           distribution: goreleaser
           version: v2.18.2
-          args: ${{ steps.args.outputs.value }}
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Classic personal access token with the public_repo scope: writes
           # the Homebrew tap, the Scoop bucket and the winget-pkgs fork, and
           # opens the pull request against microsoft/winget-pkgs.
           RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      - name: Upload dry-run artifacts
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: dist
-          path: |
-            dist/*.tar.gz
-            dist/*.zip
-            dist/*.deb
-            dist/*.rpm
-            dist/*.nupkg
-            dist/checksums.txt
-            dist/homebrew/**
-            dist/scoop/**
-            dist/winget/**
-          retention-days: 3
+          # Environment secrets: a Developer ID dedicated to this CLI and an
+          # App Store Connect API key with the Developer role.
+          MACOS_SIGN_P12: ${{ secrets.MACOS_SIGN_P12 }}
+          MACOS_SIGN_PASSWORD: ${{ secrets.MACOS_SIGN_PASSWORD }}
+          MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+          MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
       - name: Attest build provenance
-        if: github.event_name == 'push'
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: |
@@ -89,7 +115,7 @@ jobs:
       # outages) after everything else is already published and attested.
       # A failure shows up as a warning on the run without failing it.
       - name: Push to Chocolatey
-        if: github.event_name == 'push' && !contains(github.ref_name, '-')
+        if: ${{ !contains(github.ref_name, '-') }}
         continue-on-error: true
         env:
           CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}

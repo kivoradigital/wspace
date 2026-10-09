@@ -121,10 +121,15 @@ Cutting a release:
    git push origin v0.1.0
    ```
 
-4. Watch the **Release** workflow, then check the release page, the tap and
+4. **Approve the run.** The `release` job waits for a maintainer's
+   approval (Actions → the run → **Review deployments** → `release`)
+   because it uses the protected `release` environment, which holds the
+   macOS signing and notarization credentials.
+5. Watch the **Release** workflow, then check the release page, the tap and
    bucket commits, and the winget pull request (Microsoft reviews it; the
-   first submission can take a few days).
-5. Anyone can verify a download with
+   first submission can take a few days). The macOS binaries are signed and
+   notarized: `codesign -dv --verbose=2 wspace` shows the Developer ID.
+6. Anyone can verify a download with
    `gh attestation verify <file> -R kivoradigital/wspace`.
 
 Tags with a prerelease suffix (`v0.2.0-rc.1`) publish the GitHub release but
