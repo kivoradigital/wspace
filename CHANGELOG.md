@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-10-10
+
 ### Changed
 
 - macOS binaries are signed with a Developer ID and notarized by Apple, so
@@ -69,7 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hooks are detected, cancelled git commands no longer hang, and discarding
   changes keeps the newest backup when file times tie.
 
-[Unreleased]: https://github.com/kivoradigital/wspace/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/kivoradigital/wspace/compare/v0.2.3...HEAD
+[0.2.3]: https://github.com/kivoradigital/wspace/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/kivoradigital/wspace/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/kivoradigital/wspace/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/kivoradigital/wspace/compare/v0.1.0...v0.2.0
