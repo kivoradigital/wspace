@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Release archives for macOS are named `wspace_<version>_macos_<arch>.tar.gz`
+  (previously `darwin`), and every release starts with a download guide.
+
 ## [0.2.1] - 2026-10-06
 
 ### Fixed

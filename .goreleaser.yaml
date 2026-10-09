@@ -51,7 +51,9 @@ archives:
       - goos: windows
         formats:
           - zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    # "macos" instead of Go's "darwin" so people find the Mac downloads.
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ if eq .Os "darwin" }}macos{{ else }}{{ .Os }}{{ end }}_{{ .Arch }}
     # Releases are built on Windows, whose files carry no executable bit;
     # builds_info forces 0755 on the binaries inside every archive.
     builds_info:
@@ -196,3 +198,26 @@ release:
   github:
     owner: kivoradigital
     name: wspace
+  header: |
+    ## Downloads
+
+    | System | File |
+    |---|---|
+    | macOS, Apple Silicon (M1 and later) | `wspace_{{ .Version }}_macos_arm64.tar.gz` |
+    | macOS, Intel | `wspace_{{ .Version }}_macos_amd64.tar.gz` |
+    | Linux, Intel/AMD | `wspace_{{ .Version }}_linux_amd64.tar.gz`, `.deb` or `.rpm` |
+    | Linux, ARM | `wspace_{{ .Version }}_linux_arm64.tar.gz`, `.deb` or `.rpm` |
+    | Windows, Intel/AMD | `wspace_{{ .Version }}_windows_amd64.zip` |
+    | Windows, ARM | `wspace_{{ .Version }}_windows_arm64.zip` |
+
+    Package managers: `brew install --cask kivoradigital/tap/wspace` (macOS),
+    `scoop install kivoradigital/wspace` (Windows, after
+    `scoop bucket add kivoradigital https://github.com/kivoradigital/scoop-bucket`).
+    See the [README](https://github.com/kivoradigital/wspace#install) for winget,
+    Chocolatey, deb/rpm and install steps.
+
+    Verify a download with `shasum -a 256 -c checksums.txt --ignore-missing`
+    (macOS) or `sha256sum -c checksums.txt --ignore-missing` (Linux), and its
+    build provenance with `gh attestation verify <file> -R kivoradigital/wspace`.
+    The macOS binary is not notarized yet: run `xattr -c ./wspace` after
+    extracting it.
