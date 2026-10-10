@@ -115,13 +115,6 @@ homebrew_casks:
     description: Multi-repository git worktree workspaces (CLI, MCP server and RPC engine).
     license: Apache-2.0
     commit_msg_template: "chore: update {{ .ProjectName }} to {{ .Tag }}"
-    # The binary is not notarized yet; drop the quarantine attribute so it runs.
-    hooks:
-      post:
-        install: |
-          if OS.mac?
-            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/wspace"]
-          end
     skip_upload: auto
 
 scoops:
@@ -238,5 +231,4 @@ release:
     Verify a download with `shasum -a 256 -c checksums.txt --ignore-missing`
     (macOS) or `sha256sum -c checksums.txt --ignore-missing` (Linux), and its
     build provenance with `gh attestation verify <file> -R kivoradigital/wspace`.
-    The macOS binary is not notarized yet: run `xattr -c ./wspace` after
-    extracting it.
+    The macOS binaries are signed with a Developer ID and notarized by Apple.
