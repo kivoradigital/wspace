@@ -38,11 +38,8 @@ macOS and Linux
        tar -xzf wspace_<version>_<os>_<arch>.tar.gz
        chmod +x ./wspace
 
-     macOS only: the binary is not notarized by Apple yet, so macOS
-     blocks it ("cannot be opened because the developer cannot be
-     verified"). Clear the download mark first:
-
-       xattr -c ./wspace
+     On macOS the binary is signed with a Developer ID and notarized by
+     Apple, so Gatekeeper lets it run without extra steps.
 
   2. Install it:
 
@@ -124,8 +121,7 @@ folder.
 Known limitations of this test build
 ------------------------------------
 
-- The macOS binary is not notarized and the Windows binary is not
-  code-signed (see the install steps above).
+- The Windows binary is not code-signed yet (see the install steps above).
 
 
 Uninstalling
