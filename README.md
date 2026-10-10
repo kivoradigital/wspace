@@ -1,5 +1,15 @@
 # wspace
 
+[![CI](https://github.com/kivoradigital/wspace/actions/workflows/ci.yml/badge.svg)](https://github.com/kivoradigital/wspace/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/kivoradigital/wspace)](https://github.com/kivoradigital/wspace/releases/latest)
+[![Go Reference](https://pkg.go.dev/badge/github.com/kivoradigital/wspace.svg)](https://pkg.go.dev/github.com/kivoradigital/wspace)
+[![License](https://img.shields.io/github/license/kivoradigital/wspace)](LICENSE)
+
+[![Homebrew](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Fkivoradigital%2Fhomebrew-tap%2Fmain%2FCasks%2Fwspace.rb&search=version%20%22%28%5B%5E%22%5D%2B%29%22&replace=v%241&label=homebrew&logo=homebrew)](https://github.com/kivoradigital/homebrew-tap)
+[![Scoop](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fkivoradigital%2Fscoop-bucket%2Fmain%2Fwspace.json&query=%24.version&label=scoop&prefix=v)](https://github.com/kivoradigital/scoop-bucket)
+[![Chocolatey](https://img.shields.io/chocolatey/v/wspace?logo=chocolatey)](https://community.chocolatey.org/packages/wspace)
+[![Downloads](https://img.shields.io/github/downloads/kivoradigital/wspace/total)](https://github.com/kivoradigital/wspace/releases)
+
 **wspace creates and manages multi-repository workspaces built from git
 worktrees.**
 
